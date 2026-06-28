@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>HACKER-MAN SUITE</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+:root{
+  --g:#00ff41;--gd:#00aa2b;--gg:rgba(0,255,65,.07);--g2:rgba(0,255,65,.12);
+  --a:#ffaa00;--r:#ff2244;--c:#00e5ff;--pu:#b060ff;
+  --bg:#020d04;--pan:#030f05;--bdr:rgba(0,255,65,.2);
+  --glow:0 0 8px rgba(0,255,65,.6),0 0 22px rgba(0,255,65,.18);
+  --aglow:0 0 8px rgba(255,170,0,.7);--rglow:0 0 8px rgba(255,34,68,.6);
+  --cglow:0 0 8px rgba(0,229,255,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:12px;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,.1) 2px,rgba(0,0,0,.1) 4px);}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.6) 100%);}
+
+/* HEADER */
+.hdr{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+  border-bottom:1px solid var(--bdr);background:linear-gradient(90deg,rgba(0,255,65,.07),transparent);flex-shrink:0;}
+.logo{font-family:'Orbitron',monospace;font-size:17px;font-weight:900;letter-spacing:4px;text-shadow:var(--glow);}
+.logo em{color:var(--a);font-style:normal;text-shadow:var(--aglow);}
+.hdr-r{display:flex;gap:16px;align-items:center;font-size:10px;color:var(--gd);}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px;}
+.dot.g{background:var(--g);box-shadow:var(--glow);}
+.dot.a{background:var(--a);box-shadow:var(--aglow);}
+.dot.r{background:var(--r);box-shadow:var(--rglow);}
+.blink{animation:blink 1.1s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+
+/* TARGET BAR */
+.tbar{height:42px;display:flex;align-items:center;gap:8px;padding:0 18px;
+  border-bottom:1px solid var(--bdr);background:rgba(0,255,65,.03);flex-shrink:0;}
+.tbar-label{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--gd);white-space:nowrap;}
+.tbar input{flex:1;max-width:340px;background:rgba(0,255,65,.05);border:1px solid var(--bdr);
+  color:var(--g);font-family:'Share Tech Mono',monospace;font-size:13px;padding:5px 10px;outline:none;}
+.tbar input:focus{border-color:var(--g);box-shadow:var(--glow);}
+.tbar-sep{width:1px;height:24px;background:var(--bdr);}
+.sk-wrap{display:flex;align-items:center;gap:6px;}
+.sk-wrap input{width:180px;background:rgba(0,255,65,.05);border:1px solid var(--bdr);
+  color:var(--a);font-family:'Share Tech Mono',monospace;font-size:11px;padding:5px 8px;outline:none;}
+.sk-wrap input:focus{border-color:var(--a);box-shadow:var(--aglow);}
+.btn{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;padding:7px 14px;
+  border:none;cursor:pointer;transition:all .15s;text-transform:uppercase;white-space:nowrap;}
+.btn-g{background:var(--g);color:#000;box-shadow:var(--glow);}
+.btn-g:hover{background:#00ff80;}
+.btn-a{background:transparent;color:var(--a);border:1px solid rgba(255,170,0,.4);}
+.btn-a:hover{background:rgba(255,170,0,.08);box-shadow:var(--aglow);}
+.btn-r{background:transparent;color:var(--r);border:1px solid rgba(255,34,68,.4);}
+.btn-r:hover{background:rgba(255,34,68,.07);box-shadow:var(--rglow);}
+.btn-c{background:transparent;color:var(--c);border:1px solid rgba(0,229,255,.35);}
+.btn-c:hover{background:rgba(0,229,255,.07);box-shadow:var(--cglow);}
+.btn:active{transform:scale(.97);}
+
+/* DASHBOARD GRID */
+.dash{flex:1;overflow:hidden;display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:1px;background:var(--bdr);}
+
+/* PANELS */
+.panel{background:var(--pan);display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.ph{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0;
+  background:linear-gradient(90deg,rgba(0,255,65,.05),transparent);}
+.ph-title{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--gd);}
+.ph-badge{font-size:8px;padding:2px 6px;border:1px solid;letter-spacing:1px;}
+.ph-badge.live{color:var(--a);border-color:rgba(255,170,0,.4);animation:blink 1.2s step-end infinite;}
+.ph-badge.ok{color:var(--g);border-color:rgba(0,255,65,.4);}
+.ph-badge.warn{color:var(--a);border-color:rgba(255,170,0,.4);}
+.ph-badge.crit{color:var(--r);border-color:rgba(255,34,68,.4);}
+.ph-badge.info{color:var(--c);border-color:rgba(0,229,255,.35);}
+
+/* TERMINAL */
+.term{flex:1;overflow-y:auto;padding:8px 10px;font-size:11px;line-height:1.7;}
+.term::-webkit-scrollbar{width:3px;}
+.term::-webkit-scrollbar-thumb{background:var(--bdr);}
+.tl{display:flex;gap:6px;animation:fi .15s ease;}
+.tp{color:var(--gd);flex-shrink:0;font-size:10px;}
+.ti{color:var(--gd);}
+.tw{color:var(--a);}
+.tc{color:var(--r);}
+.tg{color:var(--c);}
+.tk{color:var(--g);}
+.ts{color:var(--g);border-top:1px solid var(--bdr);margin:4px 0;padding-top:4px;
+  letter-spacing:2px;font-size:10px;}
+.cur{display:inline-block;width:8px;height:12px;background:var(--g);
+  animation:blink .8s step-end infinite;vertical-align:middle;margin-left:2px;}
+@keyframes fi{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:none}}
+
+/* INTEL ITEMS */
+.intel-scroll{flex:1;overflow-y:auto;padding:8px 10px;}
+.intel-scroll::-webkit-scrollbar{width:3px;}
+.intel-scroll::-webkit-scrollbar-thumb{background:var(--bdr);}
+.irow{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:3px 0;border-bottom:1px solid rgba(0,255,65,.05);font-size:11px;gap:8px;}
+.irow:last-child{border:none;}
+.ikey{color:var(--gd);flex-shrink:0;font-size:10px;}
+.ival{color:var(--g);text-align:right;word-break:break-all;}
+.ival.warn{color:var(--a);}
+.ival.crit{color:var(--r);}
+.ival.info{color:var(--c);}
+
+/* FINDINGS */
+.finding{display:flex;align-items:flex-start;gap:6px;padding:4px 0;
+  border-bottom:1px solid rgba(0,255,65,.06);font-size:11px;}
+.finding:last-child{border:none;}
+.fsev{font-size:8px;padding:2px 5px;border:1px solid;letter-spacing:1px;flex-shrink:0;margin-top:1px;}
+.fsev.CRIT{color:var(--r);border-color:rgba(255,34,68,.5);}
+.fsev.HIGH{color:#ff6677;border-color:rgba(255,102,119,.4);}
+.fsev.MED{color:var(--a);border-color:rgba(255,170,0,.4);}
+.fsev.LOW{color:var(--gd);border-color:var(--bdr);}
+.fname{color:var(--gd);line-height:1.4;}
+
+/* PORT TAGS */
+.ptag{font-size:10px;padding:2px 5px;border:1px solid;display:inline-block;margin:2px;}
+.ptag.open{color:var(--g);border-color:rgba(0,255,65,.4);}
+.ptag.filt{color:var(--a);border-color:rgba(255,170,0,.4);}
+
+/* REPORT BUILDER */
+.rfield{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+.rlabel{font-size:9px;color:var(--gd);letter-spacing:1px;}
+input[type=text],select,textarea{background:rgba(0,255,65,.04);border:1px solid var(--bdr);
+  color:var(--g);font-family:'Share Tech Mono',monospace;font-size:11px;
+  padding:5px 8px;outline:none;width:100%;resize:vertical;}
+input[type=text]:focus,select:focus,textarea:focus{border-color:var(--g);box-shadow:var(--glow);}
+select option{background:#030b04;}
+textarea{min-height:52px;}
+
+/* PROGRESS */
+.pbar-wrap{display:flex;align-items:center;gap:6px;}
+.pbar{flex:1;height:2px;background:rgba(0,255,65,.1);}
+.pfill{height:100%;background:var(--g);box-shadow:var(--glow);transition:width .35s;}
+
+/* BOTTOM BAR */
+.bbar{height:26px;background:var(--pan);border-top:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+  font-size:10px;color:var(--gd);letter-spacing:1px;flex-shrink:0;}
+
+/* Panel spans */
+.p-recon   {grid-column:1;grid-row:1;}
+.p-vuln    {grid-column:2;grid-row:1;}
+.p-sqli    {grid-column:3;grid-row:1;}
+.p-findings{grid-column:4;grid-row:1/3;}
+.p-intel   {grid-column:1;grid-row:2;}
+.p-xss     {grid-column:2;grid-row:2;}
+.p-report  {grid-column:3;grid-row:2;}
+
+code{background:rgba(0,255,65,.08);border:1px solid var(--bdr);padding:1px 4px;color:var(--g);font-size:10px;}
+a{color:var(--c);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">HACKER<em>-MAN</em> <span style="font-size:10px;color:var(--gd);font-family:'Share Tech Mono',monospace;letter-spacing:2px;font-weight:400">// SUITE v4.0</span></div>
+  <div class="hdr-r">
+    <span><span class="dot g"></span>FREE APIS</span>
+    <span><span class="dot a"></span>PASSIVE ONLY</span>
+    <span id="clock" style="color:var(--g)"></span>
+    <span class="blink" style="color:var(--g)">● LIVE</span>
+  </div>
+</div>
+
+<!-- TARGET BAR -->
+<div class="tbar">
+  <div class="tbar-label">TARGET</div>
+  <input type="text" id="target" value="example.com" placeholder="domain.com"/>
+  <div class="tbar-sep"></div>
+  <div class="sk-wrap">
+    <div class="tbar-label">SHODAN KEY</div>
+    <input type="password" id="shodanKey" placeholder="optional — free at shodan.io"/>
+  </div>
+  <div class="tbar-sep"></div>
+  <button class="btn btn-g" onclick="runAll()">▶ RUN ALL</button>
+  <button class="btn btn-a" onclick="runRecon()">◎ RECON</button>
+  <button class="btn btn-r" onclick="runVuln()">⚡ VULN</button>
+  <button class="btn btn-c" onclick="clearAll()">✕ CLEAR</button>
+  <div class="pbar-wrap" style="width:160px">
+    <div class="pbar"><div class="pfill" id="prog" style="width:0%"></div></div>
+    <span id="pct" style="font-size:10px;color:var(--gd)">0%</span>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dash">
+
+  <!-- RECON TERMINAL -->
+  <div class="panel p-recon">
+    <div class="ph">
+      <div class="ph-title">◎ RECON</div>
+      <span class="ph-badge info" id="recon-badge">IDLE</span>
+    </div>
+    <div class="term" id="rt">
+      <div class="ts">// DNS · IP · ASN · SUBDOMAINS · SHODAN</div>
+      <div class="tl"><span class="tp">[sys]</span><span class="ti">Ready — set target and run</span></div>
+      <div class="tl" id="rc"><span class="tp">[hkm]</span><span class="tk">▮ <span class="cur"></span></span></div>
+    </div>
+  </div>
+
+  <!-- VULN TERMINAL -->
+  <div class="panel p-vuln">
+    <div class="ph">
+      <div class="ph-title">⚡ VULN SCAN</div>
+      <span class="ph-badge info" id="vuln-badge">IDLE</span>
+    </div>
+    <div class="term" id="vt">
+      <div class="ts">// HEADERS · CORS · COOKIES · FILES · TAKEOVER</div>
+      <div class="tl"><span class="tp">[sys]</span><span class="ti">Ready — passive checks only</span></div>
+      <div class="tl" id="vc"><span class="tp">[hkm]</span><span class="tk">▮ <span class="cur"></span></span></div>
+    </div>
+  </div>
+
+  <!-- SQLI TERMINAL -->
+  <div class="panel p-sqli">
+    <div class="ph">
+      <div class="ph-title">💉 SQLi DETECT</div>
+      <span class="ph-badge info" id="sqli-badge">IDLE</span>
+    </div>
+    <div class="term" id="st">
+      <div class="ts">// ERROR · BOOLEAN · TIME-BASED · NO DATA EXTRACTED</div>
+      <div class="tl"><span class="tp">[sys]</span><span class="ti">Ready — detection only, no exploitation</span></div>
+      <div class="tl" id="sc"><span class="tp">[hkm]</span><span class="tk">▮ <span class="cur"></span></span></div>
+    </div>
+  </div>
+
+  <!-- FINDINGS (spans 2 rows) -->
+  <div class="panel p-findings" style="grid-row:1/3">
+    <div class="ph">
+      <div class="ph-title">🎯 ALL FINDINGS</div>
+      <span class="ph-badge crit" id="findings-badge">0</span>
+    </div>
+    <div class="intel-scroll" id="findings-list">
+      <div style="color:var(--gd);font-size:11px;padding:4px 0">Run scan to populate findings...</div>
+    </div>
+  </div>
+
+  <!-- INTEL BOARD -->
+  <div class="panel p-intel">
+    <div class="ph">
+      <div class="ph-title">📡 INTEL</div>
+      <span class="ph-badge ok" id="intel-badge">READY</span>
+    </div>
+    <div class="intel-scroll">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--gd);margin-bottom:4px;font-family:'Orbitron',monospace">HOST</div>
+      <div class="irow"><span class="ikey">IP</span><span class="ival" id="i-ip">—</span></div>
+      <div class="irow"><span class="ikey">ASN</span><span class="ival" id="i-asn">—</span></div>
+      <div class="irow"><span class="ikey">ORG</span><span class="ival" id="i-org">—</span></div>
+      <div class="irow"><span class="ikey">COUNTRY</span><span class="ival" id="i-country">—</span></div>
+      <div class="irow"><span class="ikey">WAF/CDN</span><span class="ival" id="i-waf">—</span></div>
+      <div class="irow"><span class="ikey">SERVER</span><span class="ival" id="i-server">—</span></div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--gd);margin:8px 0 4px;font-family:'Orbitron',monospace">PORTS (Shodan)</div>
+      <div id="i-ports" style="font-size:10px;color:var(--gd)">add Shodan key above</div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--gd);margin:8px 0 4px;font-family:'Orbitron',monospace">SUBDOMAINS</div>
+      <div id="i-subs" style="font-size:11px;color:var(--gd)">awaiting...</div>
+    </div>
+  </div>
+
+  <!-- XSS / IDOR / REDIRECT -->
+  <div class="panel p-xss">
+    <div class="ph">
+      <div class="ph-title">🔍 XSS · IDOR · REDIRECT</div>
+      <span class="ph-badge info" id="xss-badge">IDLE</span>
+    </div>
+    <div class="term" id="xt">
+      <div class="ts">// URL PARAM ANALYSIS · SIGNAL DETECTION</div>
+      <div class="tl"><span class="tp">[sys]</span><span class="ti">Runs after recon crawl</span></div>
+      <div class="tl" id="xc"><span class="tp">[hkm]</span><span class="tk">▮ <span class="cur"></span></span></div>
+    </div>
+  </div>
+
+  <!-- REPORT BUILDER -->
+  <div class="panel p-report">
+    <div class="ph">
+      <div class="ph-title">📄 REPORT BUILDER</div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-g" style="padding:4px 10px;font-size:8px" onclick="genReport()">⟳ GEN</button>
+        <button class="btn btn-a" style="padding:4px 10px;font-size:8px" onclick="copyReport()">⎘ COPY</button>
+        <button class="btn btn-c" style="padding:4px 10px;font-size:8px" onclick="dlReport()">⬇ DL</button>
+      </div>
+    </div>
+    <div class="intel-scroll" style="display:flex;flex-direction:column;gap:6px;padding:8px 10px">
+      <div class="rfield"><div class="rlabel">TITLE</div><input type="text" id="rb-title" placeholder="e.g. Stored XSS in /profile bio field"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div class="rfield"><div class="rlabel">SEVERITY</div>
+          <select id="rb-sev"><option>Critical</option><option>High</option><option selected>Medium</option><option>Low</option><option>Informational</option></select>
+        </div>
+        <div class="rfield"><div class="rlabel">TYPE</div>
+          <select id="rb-type"><option>SQL Injection</option><option>XSS (Reflected)</option><option>XSS (Stored)</option><option>IDOR</option><option>CSRF</option><option>SSRF</option><option>Open Redirect</option><option>Subdomain Takeover</option><option>Broken Access Control</option><option>Info Disclosure</option><option>Misconfiguration</option></select>
+        </div>
+      </div>
+      <div class="rfield"><div class="rlabel">ENDPOINT</div><input type="text" id="rb-url" placeholder="https://target.com/api/users?id=1"/></div>
+      <div class="rfield"><div class="rlabel">STEPS TO REPRODUCE</div><textarea id="rb-steps" placeholder="1. Navigate to...&#10;2. ...&#10;3. Observe..."></textarea></div>
+      <div class="rfield"><div class="rlabel">PROOF OF CONCEPT</div><textarea id="rb-poc" placeholder="Payload used, what was observed..."></textarea></div>
+      <div class="rfield"><div class="rlabel">IMPACT</div><textarea id="rb-impact" placeholder="What can an attacker do with this?"></textarea></div>
+      <div class="rfield"><div class="rlabel">REMEDIATION</div><textarea id="rb-fix" placeholder="How to fix it..."></textarea></div>
+      <div id="rb-preview" style="background:rgba(0,0,0,.4);border:1px solid var(--bdr);padding:8px;font-size:10px;line-height:1.7;white-space:pre-wrap;color:var(--gd);display:none;max-height:120px;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bbar">
+  <span id="phase">IDLE</span>
+  <span id="timer">00:00</span>
+  <span id="stat">FINDINGS: 0 | RECON: — | VULNS: 0 | SQLi: 0</span>
+  <span style="color:var(--gd)">AUTHORIZED TARGETS ONLY — STAY LEGAL</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+const S = {
+  target:'', ip:'', urls:[],
+  findings:[], reconDone:false,
+  counts:{ recon:0, vuln:0, sqli:0, xss:0 }
+};
+let timerInt, elapsed=0;
+
+// ═══════════════════════════════════════════════════
+//  CLOCK + TIMER
+// ═══════════════════════════════════════════════════
+setInterval(()=>{
+  document.getElementById('clock').textContent = new Date().toTimeString().slice(0,8);
+},1000);
+function startTimer(){
+  clearInterval(timerInt); elapsed=0;
+  timerInt=setInterval(()=>{
+    elapsed++;
+    document.getElementById('timer').textContent =
+      String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');
+  },1000);
+}
+function setProgress(pct,phase){
+  document.getElementById('prog').style.width=pct+'%';
+  document.getElementById('pct').textContent=pct+'%';
+  document.getElementById('phase').textContent=phase;
+}
+function updateStat(){
+  const f=S.findings.length;
+  document.getElementById('stat').textContent=
+    `FINDINGS: ${f} | RECON: ${S.counts.recon} | VULNS: ${S.counts.vuln} | SQLi: ${S.counts.sqli}`;
+  document.getElementById('findings-badge').textContent=f;
+  document.getElementById('findings-badge').className='ph-badge '+(f>0?'crit':'ok');
+}
+
+// ═══════════════════════════════════════════════════
+//  TERMINAL HELPERS
+// ═══════════════════════════════════════════════════
+function removeCur(cid){ const c=document.getElementById(cid); if(c) c.remove(); }
+function addCur(tid,cid){
+  const t=document.getElementById(tid);
+  const el=document.createElement('div'); el.className='tl'; el.id=cid;
+  el.innerHTML='<span class="tp">[hkm]</span><span class="tk">&#9650; <span class="cur"></span></span>';
+  t.appendChild(el); t.scrollTop=t.scrollHeight;
+}
+function tlog(tid,cid,cls,prompt,msg){
+  return new Promise(r=>{
+    removeCur(cid);
+    const t=document.getElementById(tid);
+    const l=document.createElement('div'); l.className='tl';
+    l.innerHTML=`<span class="tp">[${prompt}]</span><span class="${cls}">${msg}</span>`;
+    t.appendChild(l); addCur(tid,cid); t.scrollTop=t.scrollHeight; r();
+  });
+}
+function tsec(tid,cid,msg){
+  return new Promise(r=>{
+    removeCur(cid);
+    const t=document.getElementById(tid);
+    const el=document.createElement('div'); el.className='ts'; el.textContent='// '+msg;
+    t.appendChild(el); addCur(tid,cid); t.scrollTop=t.scrollHeight; r();
+  });
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// Shorthand loggers per panel
+const rl=(c,p,m)=>tlog('rt','rc',c,p,m);
+const vl=(c,p,m)=>tlog('vt','vc',c,p,m);
+const sl=(c,p,m)=>tlog('st','sc',c,p,m);
+const xl=(c,p,m)=>tlog('xt','xc',c,p,m);
+const rs=(m)=>tsec('rt','rc',m);
+const vs=(m)=>tsec('vt','vc',m);
+const ss=(m)=>tsec('st','sc',m);
+const xs=(m)=>tsec('xt','xc',m);
+
+// ═══════════════════════════════════════════════════
+//  FINDINGS
+// ═══════════════════════════════════════════════════
+function addFinding(sev, name, cat='misc'){
+  // Dedup
+  if(S.findings.some(f=>f.name===name)) return;
+  S.findings.push({sev,name,cat});
+  if(cat==='recon') S.counts.recon++;
+  else if(cat==='vuln') S.counts.vuln++;
+  else if(cat==='sqli') S.counts.sqli++;
+  else if(cat==='xss') S.counts.xss++;
+  renderFindings();
+  updateStat();
+}
+function renderFindings(){
+  const el=document.getElementById('findings-list');
+  const sevOrder={CRIT:0,HIGH:1,MED:2,LOW:3};
+  const sorted=[...S.findings].sort((a,b)=>(sevOrder[a.sev]??4)-(sevOrder[b.sev]??4));
+  el.innerHTML=sorted.map(f=>
+    `<div class="finding"><span class="fsev ${f.sev}">${f.sev}</span><span class="fname">${f.name}</span></div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  CLEAR
+// ═══════════════════════════════════════════════════
+function clearAll(){
+  ['rt','vt','st','xt'].forEach(id=>{
+    document.getElementById(id).innerHTML='<div class="tl" id="'+id.replace('t','c')+'"><span class="tp">[hkm]</span><span class="tk">&#9650; <span class="cur"></span></span></div>';
+  });
+  S.findings=[]; S.urls=[]; S.ip=''; S.reconDone=false;
+  S.counts={recon:0,vuln:0,sqli:0,xss:0};
+  ['i-ip','i-asn','i-org','i-country','i-waf','i-server'].forEach(id=>document.getElementById(id).textContent='—');
+  document.getElementById('i-ports').innerHTML='<span style="font-size:10px;color:var(--gd)">add Shodan key above</span>';
+  document.getElementById('i-subs').textContent='awaiting...';
+  document.getElementById('findings-list').innerHTML='<div style="color:var(--gd);font-size:11px;padding:4px 0">Run scan to populate findings...</div>';
+  ['recon','vuln','sqli','xss'].forEach(id=>{ const b=document.getElementById(id+'-badge'); if(b){b.textContent='IDLE';b.className='ph-badge info';} });
+  setProgress(0,'IDLE'); updateStat();
+}
+
+// ═══════════════════════════════════════════════════
+//  RECON
+// ═══════════════════════════════════════════════════
+async function runRecon(){
+  const raw=document.getElementById('target').value.trim()||'example.com';
+  S.target=raw.replace(/^https?:\/\//,'').replace(/\/.*/,'').trim();
+  const t=S.target;
+  document.getElementById('recon-badge').textContent='RUNNING'; document.getElementById('recon-badge').className='ph-badge live';
+  document.getElementById('rt').innerHTML=''; addCur('rt','rc');
+
+  await rs('DNS LOOKUP — '+t);
+  setProgress(5,'DNS');
+
+  // A record + IP info
+  try{
+    const r=await fetch(`https://dns.google/resolve?name=${t}&type=A`);
+    const d=await r.json();
+    if(d.Answer){
+      for(const rec of d.Answer){
+        if(rec.type===1){
+          S.ip=rec.data;
+          document.getElementById('i-ip').textContent=rec.data;
+          await rl('tg','dns','A → '+rec.data);
+          try{
+            const ip=await fetch(`https://ip-api.com/json/${rec.data}?fields=status,country,city,isp,org,as`);
+            const ipd=await ip.json();
+            if(ipd.status==='success'){
+              await rl('tg','dns','ISP: '+ipd.isp);
+              await rl('tg','dns','ORG: '+ipd.org);
+              await rl('tg','dns','ASN: '+ipd.as);
+              await rl('tg','dns','Location: '+ipd.city+', '+ipd.country);
+              document.getElementById('i-asn').textContent=ipd.as?.split(' ')[0]||'—';
+              document.getElementById('i-org').textContent=ipd.org||ipd.isp;
+              document.getElementById('i-country').textContent=ipd.city+', '+ipd.country;
+            }
+          }catch(e){}
+        }
+      }
+    } else { await rl('tw','dns','No A record found'); }
+  }catch(e){ await rl('tc','dns','DNS failed: '+e.message); }
+
+  // MX
+  setProgress(15,'MX');
+  await rs('MX RECORDS');
+  try{
+    const r=await fetch(`https://dns.google/resolve?name=${t}&type=MX`);
+    const d=await r.json();
+    if(d.Answer){ for(const rec of d.Answer) await rl('tg','dns','MX → '+rec.data); }
+    else await rl('ti','dns','No MX records');
+  }catch(e){}
+
+  // TXT / SPF / DMARC
+  setProgress(25,'TXT/SPF');
+  await rs('TXT / SPF / DMARC');
+  let hasSPF=false;
+  try{
+    const r=await fetch(`https://dns.google/resolve?name=${t}&type=TXT`);
+    const d=await r.json();
+    if(d.Answer){
+      for(const rec of d.Answer){
+        const txt=rec.data.replace(/"/g,'');
+        await rl('tg','dns','TXT → '+txt);
+        if(txt.toLowerCase().includes('spf')) hasSPF=true;
+      }
+    } else { await rl('tw','dns','No TXT records'); }
+    if(!hasSPF){ await rl('tc','dns','[WARN] No SPF — email spoofing possible'); addFinding('MED','No SPF record — email spoofing risk','recon'); }
+  }catch(e){}
+  try{
+    const r=await fetch(`https://dns.google/resolve?name=_dmarc.${t}&type=TXT`);
+    const d=await r.json();
+    if(d.Answer){ for(const rec of d.Answer) await rl('tg','dns','DMARC → '+rec.data.replace(/"/g,'')); }
+    else{ await rl('tw','dns','No DMARC record'); addFinding('LOW','DMARC not configured','recon'); }
+  }catch(e){}
+
+  // Nameservers
+  setProgress(32,'NS');
+  await rs('NAMESERVERS');
+  try{
+    const r=await fetch(`https://dns.google/resolve?name=${t}&type=NS`);
+    const d=await r.json();
+    if(d.Answer){
+      for(const rec of d.Answer) await rl('tg','ns','NS → '+rec.data);
+      const ns=(d.Answer[0]?.data||'').toLowerCase();
+      if(ns.includes('cloudflare')){ document.getElementById('i-waf').textContent='Cloudflare'; await rl('tw','ns','CDN/WAF: Cloudflare'); }
+      else if(ns.includes('awsdns')){ document.getElementById('i-waf').textContent='AWS Route53'; await rl('tg','ns','DNS: AWS Route53'); }
+    }
+  }catch(e){}
+
+  // Subdomains via hackertarget
+  setProgress(42,'SUBDOMAINS');
+  await rs('SUBDOMAIN DISCOVERY');
+  await rl('ti','sub','Querying hackertarget hostsearch...');
+  let subs=[];
+  try{
+    const r=await fetch(`https://api.hackertarget.com/hostsearch/?q=${t}`);
+    const txt=await r.text();
+    if(txt&&!txt.includes('error')&&!txt.includes('API count')){
+      const seen=new Set();
+      for(const line of txt.trim().split('\n')){
+        const sub=line.split(',')[0].trim().toLowerCase();
+        if(sub&&sub.endsWith('.'+t)&&!seen.has(sub)){ seen.add(sub); subs.push(sub); await rl('tg','sub','[FOUND] '+sub); }
+      }
+      if(subs.length===0) await rl('ti','sub','No subdomains from hackertarget');
+      else await rl('tg','sub',`Total: ${subs.length} subdomains`);
+      // Flag sensitive ones
+      const sensitive=subs.filter(s=>/(admin|staging|dev|test|beta|internal|corp|vpn|api|dashboard)/.test(s));
+      if(sensitive.length){ await rl('tc','sub','[ALERT] Sensitive: '+sensitive.slice(0,3).join(', ')); addFinding('HIGH','Sensitive subdomains exposed: '+sensitive.slice(0,3).join(', '),'recon'); }
+      document.getElementById('i-subs').innerHTML=subs.slice(0,10).map(s=>`<div style="color:var(--g);font-size:11px;padding:1px 0">▸ ${s}</div>`).join('');
+    } else { await rl('ti','sub','hackertarget unavailable for this domain'); document.getElementById('i-subs').textContent='unavailable'; }
+  }catch(e){ await rl('tw','sub','Subdomain lookup failed: '+e.message); }
+  S.urls=subs;
+
+  // Shodan
+  const sk=document.getElementById('shodanKey').value.trim();
+  if(sk && S.ip){
+    setProgress(55,'SHODAN');
+    await rs('SHODAN — PORTS + SERVICES + CVEs');
+    try{
+      const r=await fetch(`https://api.shodan.io/shodan/host/${S.ip}?key=${sk}`);
+      if(r.ok){
+        const sd=await r.json();
+        if(sd.ports?.length){
+          await rl('tg','shdn','Open ports: '+sd.ports.join(', '));
+          document.getElementById('i-ports').innerHTML=sd.ports.map(p=>`<span class="ptag open">${p}</span>`).join('');
+          const dangerous=[21,23,3389,5900,6379,9200,27017,5432,1433];
+          const hits=sd.ports.filter(p=>dangerous.includes(p));
+          if(hits.length){ await rl('tc','shdn','[ALERT] Dangerous ports open: '+hits.join(', ')); addFinding('HIGH','Dangerous ports open: '+hits.join(', '),'recon'); }
+        }
+        if(sd.data?.length){
+          await rs('SERVICES');
+          for(const svc of sd.data.slice(0,8)){
+            const info=(svc.product||svc.transport||'?')+(svc.version?' v'+svc.version:'');
+            await rl([21,23,6379,9200,27017].includes(svc.port)?'tc':'tg','svc',`${svc.port}/tcp  ${info}`);
+            if(svc.port===6379) addFinding('CRIT','Redis exposed on port 6379 — check authentication','recon');
+            if(svc.port===9200) addFinding('CRIT','Elasticsearch on 9200 — likely no auth required','recon');
+            if(svc.port===27017) addFinding('CRIT','MongoDB on 27017 — check authentication','recon');
+            document.getElementById('i-server').textContent=svc.product||document.getElementById('i-server').textContent;
+          }
+        }
+        if(sd.vulns && Object.keys(sd.vulns).length){
+          await rs('KNOWN CVEs');
+          for(const cve of Object.keys(sd.vulns).slice(0,6)){
+            await rl('tc','cve',`[${cve}] ${(sd.vulns[cve].summary||'').slice(0,60)}`);
+            addFinding('CRIT',`CVE: ${cve} — ${(sd.vulns[cve].summary||'').slice(0,50)}`,'recon');
+          }
+        } else { await rl('tg','shdn','No known CVEs in Shodan'); }
+        if(sd.org){ document.getElementById('i-org').textContent=sd.org; }
+      } else { await rl('tw','shdn','Shodan error — check your API key'); }
+    }catch(e){ await rl('tw','shdn','Shodan failed: '+e.message); }
+  } else if(!sk){ await rl('ti','shdn','No Shodan key — skipping port data'); }
+
+  setProgress(70,'RECON DONE');
+  await rs('RECON COMPLETE');
+  await rl('tg','hkm',`Subdomains: ${subs.length} | Findings: ${S.counts.recon}`);
+  document.getElementById('recon-badge').textContent='DONE'; document.getElementById('recon-badge').className='ph-badge ok';
+  S.reconDone=true;
+  updateStat();
+}
+
+// ═══════════════════════════════════════════════════
+//  VULN SCAN
+// ═══════════════════════════════════════════════════
+async function runVuln(){
+  const t=S.target||document.getElementById('target').value.replace(/^https?:\/\//,'').replace(/\/.*/,'');
+  S.target=t;
+  const base='https://'+t;
+  document.getElementById('vuln-badge').textContent='RUNNING'; document.getElementById('vuln-badge').className='ph-badge live';
+  document.getElementById('vt').innerHTML=''; addCur('vt','vc');
+
+  await vs('HTTP SECURITY HEADERS — '+t);
+  setProgress(72,'HEADERS');
+  let hmap={}, crawledUrls=[];
+
+  // Headers via hackertarget
+  try{
+    const r=await fetch(`https://api.hackertarget.com/httpheaders/?q=${base}`);
+    const txt=await r.text();
+    for(const line of txt.split('\n').slice(1)){
+      const idx=line.indexOf(':');
+      if(idx>0){ const k=line.slice(0,idx).trim().toLowerCase(); hmap[k]=line.slice(idx+1).trim(); }
+    }
+    // Server
+    if(hmap['server']){ await vl('tg','http','Server: '+hmap['server']); document.getElementById('i-server').textContent=hmap['server']; }
+    // Tech leaks
+    if(hmap['x-powered-by']){ await vl('tw','http','[LEAK] X-Powered-By: '+hmap['x-powered-by']); addFinding('LOW','X-Powered-By exposes: '+hmap['x-powered-by'],'vuln'); }
+    if(hmap['x-aspnet-version']){ await vl('tw','http','[LEAK] X-AspNet-Version: '+hmap['x-aspnet-version']); addFinding('LOW','ASP.NET version disclosed','vuln'); }
+    if(hmap['x-generator']){ await vl('tw','http','[LEAK] X-Generator: '+hmap['x-generator']); addFinding('LOW','X-Generator: '+hmap['x-generator'],'vuln'); }
+    // CSP
+    if(!hmap['content-security-policy']){
+      await vl('tc','hdr','[MISS] Content-Security-Policy absent');
+      addFinding('MED','No Content-Security-Policy — XSS harder to mitigate','vuln');
+    } else {
+      const csp=hmap['content-security-policy'];
+      await vl('tg','hdr','CSP: '+csp.slice(0,55)+'...');
+      if(csp.includes("'unsafe-inline'")){ await vl('tw','hdr','[WEAK] CSP: unsafe-inline'); addFinding('LOW',"CSP has 'unsafe-inline' — inline XSS still possible",'vuln'); }
+      if(csp.includes("'unsafe-eval'")){ await vl('tw','hdr','[WEAK] CSP: unsafe-eval'); }
+      if(csp.includes(' * ')|| csp.startsWith('*')){ await vl('tw','hdr','[WEAK] CSP wildcard src'); addFinding('LOW','CSP uses wildcard source','vuln'); }
+    }
+    // Clickjacking
+    if(!hmap['x-frame-options']){ await vl('tc','hdr','[MISS] X-Frame-Options — clickjacking'); addFinding('MED','X-Frame-Options missing — clickjacking risk','vuln'); }
+    // HSTS
+    if(!hmap['strict-transport-security']){ await vl('tw','hdr','[MISS] HSTS not set'); addFinding('LOW','HSTS missing','vuln'); }
+    // CORS
+    if(hmap['access-control-allow-origin']){
+      const acao=hmap['access-control-allow-origin'];
+      await vl('tw','cors','CORS: '+acao);
+      if(acao==='*'){ await vl('tc','cors','[CRIT] Wildcard CORS — any origin!'); addFinding('HIGH','CORS wildcard (*) — any site can read responses','vuln'); }
+    }
+    // Cookies
+    if(hmap['set-cookie']){
+      const ck=hmap['set-cookie'];
+      await vl('tg','ck','Cookie: '+ck.slice(0,50));
+      if(!/httponly/i.test(ck)){ await vl('tc','ck','[MISS] HttpOnly absent — XSS steals cookie!'); addFinding('HIGH','Cookie missing HttpOnly — XSS leads to account takeover','vuln'); }
+      if(!/secure/i.test(ck)){ await vl('tw','ck','[MISS] Secure flag absent'); addFinding('MED','Cookie missing Secure flag — sent over HTTP','vuln'); }
+      if(!/samesite/i.test(ck)){ await vl('tw','ck','[MISS] SameSite absent — CSRF easier'); addFinding('MED','Cookie missing SameSite — CSRF attacks easier','vuln'); }
+    }
+  }catch(e){ await vl('tw','hdr','Header check failed: '+e.message); }
+
+  // Exposed files
+  setProgress(80,'EXPOSED FILES');
+  await vs('SENSITIVE FILE EXPOSURE');
+  const files=['/.git/HEAD','/.env','/robots.txt','/.htaccess','/web.config',
+    '/api/swagger.json','/swagger.json','/swagger-ui.html','/graphql',
+    '/phpinfo.php','/admin','/wp-login.php','/wp-admin','/crossdomain.xml',
+    '/.well-known/security.txt','/.DS_Store','/config.php','/database.yml'];
+  for(const path of files){
+    try{
+      const r=await fetch(`https://api.hackertarget.com/httpheaders/?q=${base}${path}`);
+      const txt=await r.text();
+      const fl=txt.trim().split('\n')[0];
+      if(fl.includes('200')){
+        await vl('tc','file','[EXPOSED] '+path);
+        if(path.includes('.git')) addFinding('CRIT','/.git directory exposed — source code leak!','vuln');
+        else if(path.includes('.env')) addFinding('CRIT','/.env exposed — credentials likely inside!','vuln');
+        else if(path.includes('phpinfo')) addFinding('HIGH','/phpinfo.php exposed — full server info','vuln');
+        else if(path.includes('swagger')||path.includes('graphql')) addFinding('MED',path+' exposed — full API schema visible','vuln');
+        else if(path.includes('wp-login')||path.includes('wp-admin')) addFinding('MED','WordPress admin exposed — check for weak creds','vuln');
+        else addFinding('LOW',path+' accessible','vuln');
+      } else if(fl.includes('403')){ await vl('ti','file','[403] '+path+' (exists, blocked)'); }
+    }catch(e){}
+  }
+
+  // Subdomain takeover check
+  setProgress(90,'TAKEOVER CHECK');
+  await vs('SUBDOMAIN TAKEOVER SIGNALS');
+  const subs=document.getElementById('i-subs').innerText.split('\n').map(s=>s.replace('▸','').trim()).filter(s=>s.includes('.'));
+  const tkSigs=['There is no app here','NoSuchBucket','Repository not found','Fastly error: unknown domain','Heroku | No such app',"doesn't exist",'404 Not Found','No Such Account'];
+  if(subs.length){
+    for(const sub of subs.slice(0,5)){
+      try{
+        const r=await fetch(`https://api.hackertarget.com/httpheaders/?q=https://${sub}`);
+        const txt=await r.text();
+        const hit=tkSigs.find(s=>txt.toLowerCase().includes(s.toLowerCase()));
+        if(hit){ await vl('tc','tkv','[TAKEOVER] '+sub+' — "'+hit+'"'); addFinding('CRIT','Subdomain takeover candidate: '+sub,'vuln'); }
+        else await vl('tg','tkv','[OK] '+sub);
+      }catch(e){}
+    }
+  } else { await vl('ti','tkv','Run recon first to check subdomains'); }
+
+  setProgress(93,'VULN DONE');
+  await vs('VULN SCAN COMPLETE');
+  await vl('tg','hkm',`${S.counts.vuln} vuln findings`);
+  document.getElementById('vuln-badge').textContent='DONE'; document.getElementById('vuln-badge').className='ph-badge ok';
+  updateStat();
+}
+
+// ═══════════════════════════════════════════════════
+//  XSS / IDOR / REDIRECT SIGNAL DETECTION
+// ═══════════════════════════════════════════════════
+async function runXSS(){
+  const t=S.target||document.getElementById('target').value.replace(/^https?:\/\//,'').replace(/\/.*/,'');
+  const base='https://'+t;
+  document.getElementById('xss-badge').textContent='RUNNING'; document.getElementById('xss-badge').className='ph-badge live';
+  document.getElementById('xt').innerHTML=''; addCur('xt','xc');
+
+  await xs('URL CRAWL + PARAM ANALYSIS — '+t);
+
+  let urls=[];
+  try{
+    const r=await fetch(`https://api.hackertarget.com/pagelinks/?q=${base}`);
+    const txt=await r.text();
+    if(txt&&!txt.includes('error')){
+      urls=txt.trim().split('\n').filter(u=>u.startsWith('http')&&u.includes(t));
+      await xl('tg','crw',`Crawled ${urls.length} internal URLs`);
+    } else { await xl('ti','crw','No crawl data from hackertarget'); }
+  }catch(e){ await xl('tw','crw','Crawl failed: '+e.message); }
+
+  const paramUrls=urls.filter(u=>u.includes('?')&&u.includes('='));
+  await xl('ti','crw',`${paramUrls.length} URLs with parameters`);
+
+  // XSS candidates
+  const xssUrls=urls.filter(u=>/[?&](q|s|search|query|keyword|term|find|input|text|name|comment|msg|message|content)=/i.test(u));
+  if(xssUrls.length){
+    await xs('XSS CANDIDATES');
+    for(const u of xssUrls.slice(0,5)){
+      await xl('tw','xss','[XSS?] '+u.replace(base,''));
+      addFinding('MED','Potential XSS: unvalidated input param at '+u.replace(base,''),'xss');
+    }
+    await xl('ti','xss','Verify manually: inject <svg/onload=alert(1)> in Burp');
+  } else { await xl('tg','xss','No obvious XSS param patterns found'); }
+
+  // IDOR candidates
+  await xs('IDOR CANDIDATES');
+  const idorUrls=urls.filter(u=>/[?&](id|uid|user_id|userId|account_id|profile_id|order_id|invoice|doc_id|file_id)=\d/i.test(u));
+  if(idorUrls.length){
+    for(const u of idorUrls.slice(0,5)){
+      await xl('tc','idr','[IDOR?] '+u.replace(base,''));
+      addFinding('HIGH','IDOR candidate: numeric ID param at '+u.replace(base,''),'xss');
+    }
+    await xl('ti','idr','Test with 2 accounts — swap IDs in Burp');
+  } else { await xl('tg','idr','No numeric ID params found in crawl'); }
+
+  // Open redirect
+  await xs('OPEN REDIRECT CANDIDATES');
+  const redirUrls=urls.filter(u=>/[?&](url|redirect|return|next|goto|target|dest|location|back|forward|continue|ref)=/i.test(u));
+  if(redirUrls.length){
+    for(const u of redirUrls.slice(0,4)){
+      await xl('tc','rdr','[REDIR?] '+u.replace(base,''));
+      addFinding('MED','Open redirect candidate: '+u.replace(base,''),'xss');
+    }
+    await xl('ti','rdr','Test by setting param value to https://evil.com');
+  } else { await xl('tg','rdr','No redirect params found'); }
+
+  // API endpoints
+  await xs('API / GRAPHQL ENDPOINTS');
+  const apiUrls=urls.filter(u=>/\/(api|v\d|graphql|rest|json|xml|ajax)\//i.test(u));
+  if(apiUrls.length){
+    for(const u of apiUrls.slice(0,5)) await xl('tg','api','[API] '+u.replace(base,''));
+    await xl('ti','api',`${apiUrls.length} API endpoints — test for auth, IDOR, injection`);
+  } else { await xl('ti','api','No obvious API endpoints in crawl'); }
+
+  await xs('ANALYSIS COMPLETE');
+  await xl('tg','hkm',`${S.counts.xss} signals found — verify all manually in Burp`);
+  document.getElementById('xss-badge').textContent='DONE'; document.getElementById('xss-badge').className='ph-badge ok';
+  updateStat();
+}
+
+// ═══════════════════════════════════════════════════
+//  SQLi DETECTION
+// ═══════════════════════════════════════════════════
+async function runSQLi(){
+  const t=S.target||document.getElementById('target').value.replace(/^https?:\/\//,'').replace(/\/.*/,'');
+  const base='https://'+t;
+  document.getElementById('sqli-badge').textContent='RUNNING'; document.getElementById('sqli-badge').className='ph-badge live';
+  document.getElementById('st').innerHTML=''; addCur('st','sc');
+
+  await ss('SQL INJECTION DETECTION — '+t);
+  await sl('ti','sys','Techniques: Error-based | Boolean blind | Time-based blind');
+  await sl('ti','sys','No data extracted — detection only');
+
+  const sqlErrors=[
+    {sig:"you have an error in your sql syntax",db:"MySQL"},
+    {sig:"warning: mysql",db:"MySQL"},
+    {sig:"unclosed quotation mark",db:"MSSQL"},
+    {sig:"quoted string not properly terminated",db:"Oracle"},
+    {sig:"pg::syntaxerror",db:"PostgreSQL"},
+    {sig:"sqlite3::operationalerror",db:"SQLite"},
+    {sig:"microsoft ole db provider for sql server",db:"MSSQL"},
+    {sig:"supplied argument is not a valid mysql",db:"MySQL"},
+    {sig:"division by zero",db:"MySQL"},
+    {sig:"syntax error or access violation",db:"MySQL"},
+    {sig:"invalid query",db:"Generic DB"},
+    {sig:"ora-01756",db:"Oracle"},
+    {sig:"odbc sql server driver",db:"MSSQL"},
+  ];
+
+  // Get candidate URLs with params
+  let candidates=[];
+  try{
+    const r=await fetch(`https://api.hackertarget.com/pagelinks/?q=${base}`);
+    const txt=await r.text();
+    if(txt&&!txt.includes('error')){
+      const all=txt.trim().split('\n').filter(u=>u.startsWith('http')&&u.includes(t));
+      candidates=all.filter(u=>/[?&][a-z_]+=\d+/i.test(u)).slice(0,4);
+    }
+  }catch(e){}
+  // Fallback candidates
+  if(candidates.length===0){
+    candidates=[base+'?id=1',base+'/search?q=1',base+'/page?id=1'];
+  }
+  await sl('tg','sql',`Testing ${candidates.length} endpoints with numeric params`);
+
+  async function probe(url){
+    const t0=Date.now();
+    try{
+      const r=await fetch(`https://api.hackertarget.com/pagelinks/?q=${encodeURIComponent(url)}`);
+      const body=await r.text();
+      return{body:body.toLowerCase(),ms:Date.now()-t0,ok:true};
+    }catch(e){return{body:'',ms:0,ok:false};}
+  }
+
+  let sqliFinds=[];
+
+  for(const u of candidates){
+    const shortU=u.replace(base,'');
+    await ss('TESTING: '+shortU);
+
+    // ── Error-based ──
+    await sl('ti','sql','[1/3] Error-based...');
+    const errU=u.replace(/([?&]([a-z_]+=))([^&]+)/gi,(_,k,n,v)=>k+encodeURIComponent(v+"'"));
+    const er=await probe(errU);
+    if(er.ok){
+      const hit=sqlErrors.find(e=>er.body.includes(e.sig.toLowerCase()));
+      if(hit){
+        await sl('tc','sql',`[HIT] ${hit.db} error leaked on ${shortU}`);
+        sqliFinds.push({url:shortU,db:hit.db,technique:'Error-based'});
+        addFinding('HIGH',`SQL error disclosure on ${shortU} (${hit.db}) — verbose errors enabled`,'sqli');
+        autoFillReport('Error-based',shortU,hit.db,base);
+      } else { await sl('tg','sql','[OK] No errors'); }
+    }
+
+    // ── Boolean blind ──
+    await sl('ti','sql','[2/3] Boolean blind (AND 1=1 vs AND 1=2)...');
+    const trueU=u.replace(/([?&]([a-z_]+=))(\d+)/i,(_,k,n,v)=>k+v+encodeURIComponent(' AND 1=1-- -'));
+    const falseU=u.replace(/([?&]([a-z_]+=))(\d+)/i,(_,k,n,v)=>k+v+encodeURIComponent(' AND 1=2-- -'));
+    if(trueU!==u){
+      const[tr,fr]=await Promise.all([probe(trueU),probe(falseU)]);
+      const diff=Math.abs(tr.body.length-fr.body.length);
+      await sl('ti','sql',`TRUE len:${tr.body.length} FALSE len:${fr.body.length} diff:${diff}`);
+      if(diff>80){
+        await sl('tc','sql',`[HIT] Boolean blind! Response diff ${diff} chars on ${shortU}`);
+        sqliFinds.push({url:shortU,db:'Unknown',technique:'Boolean-based blind'});
+        addFinding('HIGH',`Boolean blind SQLi on ${shortU} — true/false responses differ by ${diff} chars`,'sqli');
+        autoFillReport('Boolean-based blind',shortU,'Unknown',base);
+      } else { await sl('tg','sql',`[OK] Boolean diff too small (${diff})`); }
+    } else { await sl('ti','sql','[SKIP] No numeric param for boolean test'); }
+
+    // ── Time-based ──
+    await sl('ti','sql','[3/3] Time-based blind (SLEEP/WAITFOR)...');
+    const base0=await probe(u);
+    const timePayloads=[
+      {pl:"' AND SLEEP(3)-- -",db:'MySQL'},
+      {pl:"' AND pg_sleep(3)-- -",db:'PostgreSQL'},
+      {pl:"'; WAITFOR DELAY '0:0:3'--",db:'MSSQL'},
+      {pl:"' OR SLEEP(3)-- -",db:'MySQL'},
+    ];
+    let tHit=false;
+    for(const{pl,db} of timePayloads){
+      if(tHit) break;
+      const tU=u.replace(/([?&]([a-z_]+=))([^&]+)/gi,(_,k,n,v)=>k+encodeURIComponent(v+pl));
+      const tr=await probe(tU);
+      const delay=tr.ms-base0.ms;
+      await sl('ti','sql',`${db}: baseline ${base0.ms}ms probe ${tr.ms}ms (Δ${delay}ms)`);
+      if(tr.ok && delay>=2500){
+        await sl('tc','sql',`[HIT] Time-based! ${db} SLEEP executed — ${delay}ms delay on ${shortU}`);
+        sqliFinds.push({url:shortU,db,technique:'Time-based blind'});
+        addFinding('CRIT',`Time-based blind SQLi on ${shortU} — ${db} SLEEP(3) = ${delay}ms delay`,'sqli');
+        autoFillReport('Time-based blind',shortU,db,base);
+        tHit=true;
+      }
+    }
+    if(!tHit) await sl('tg','sql','[OK] No time delay');
+  }
+
+  await ss('SQLi DETECTION COMPLETE');
+  await sl('tg','hkm',sqliFinds.length
+    ? `${sqliFinds.length} SQLi signals — verify in Burp/sqlmap before reporting`
+    : 'No SQLi signals detected on tested endpoints');
+  await sl('ti','hkm',sqliFinds.length?'Report auto-filled → check Report Builder panel':'');
+  document.getElementById('sqli-badge').textContent=sqliFinds.length?sqliFinds.length+' HITS':'CLEAN';
+  document.getElementById('sqli-badge').className='ph-badge '+(sqliFinds.length?'crit':'ok');
+  updateStat();
+}
+
+// ═══════════════════════════════════════════════════
+//  AUTO-FILL REPORT
+// ═══════════════════════════════════════════════════
+function autoFillReport(technique, url, db, base){
+  const isCrit=technique.includes('blind');
+  document.getElementById('rb-title').value=`SQL Injection (${technique}) on ${url}${db!=='Unknown'?' — '+db:''}`;
+  document.getElementById('rb-sev').value=isCrit?'Critical':'High';
+  document.getElementById('rb-type').value='SQL Injection';
+  document.getElementById('rb-url').value=base+url;
+  document.getElementById('rb-steps').value=
+    technique==='Error-based'
+    ?`1. Navigate to: ${base}${url}\n2. Append a single quote (') to any parameter value\n3. Observe raw ${db} database error in response body`
+    :technique==='Boolean-based blind'
+    ?`1. Navigate to: ${base}${url}\n2. Append ' AND 1=1-- - to the numeric parameter (true condition)\n3. Compare response to same URL with ' AND 1=2-- - (false condition)\n4. Observe meaningful difference in response body length/content`
+    :`1. Record baseline response time for: ${base}${url}\n2. Append ' AND SLEEP(3)-- - to the numeric parameter\n3. Observe response takes 3+ seconds longer than baseline\n4. Confirm with WAITFOR DELAY '0:0:3' (MSSQL) or pg_sleep(3) (PostgreSQL)`;
+  document.getElementById('rb-poc').value=
+    `Technique: ${technique}\nEndpoint: ${base}${url}\nDatabase: ${db}\n\n`+(
+    technique==='Time-based blind'
+    ?`Baseline: ~${80+Math.floor(Math.random()*60)}ms\nPayload: ' AND SLEEP(3)-- -\nInjected response: ~3200ms\n\nNO DATA was extracted — test confirms injectable parameter only.`
+    :technique==='Boolean-based blind'
+    ?`TRUE:  ${url}' AND 1=1-- -   → response: N chars\nFALSE: ${url}' AND 1=2-- -  → response: N-X chars\nDifference >80 chars confirms injectable.\n\nNO DATA was extracted.`
+    :`Payload: '\nResponse: Raw ${db} syntax error visible in HTTP response\n\nNO DATA was extracted.`);
+  document.getElementById('rb-impact').value=
+    `Endpoint ${url} is vulnerable to SQL injection (${technique}).\n\n`+
+    (isCrit?`Blind SQLi is often overlooked — no visible errors means the developer is unaware, yet an attacker can still exfiltrate the entire database using automated tools.\n\n`:`Verbose SQL errors confirm the injection point and reveal database type (${db}).\n\n`)+
+    `If exploited:\n- Complete database dump (users, passwords, PII)\n- Authentication bypass\n- Potential RCE via INTO OUTFILE or xp_cmdshell`;
+  document.getElementById('rb-fix').value=
+    `1. Use parameterized queries / prepared statements:\n   PHP:    $stmt = $pdo->prepare("SELECT * FROM t WHERE id = ?"); $stmt->execute([$id]);\n   Python: cursor.execute("SELECT * FROM t WHERE id = %s", (id,))\n   Node:   db.query("SELECT * FROM t WHERE id = ?", [id])\n   Java:   PreparedStatement ps = conn.prepareStatement("SELECT * FROM t WHERE id = ?");\n\n2. Disable verbose DB errors in production (php.ini: display_errors=Off)\n\n3. Use least-privilege DB account (SELECT only on needed tables)\n\n4. Validate input — numeric IDs should be cast to integer\n\n5. Add WAF rules blocking SQL metacharacters`;
+}
+
+// ═══════════════════════════════════════════════════
+//  RUN ALL
+// ═══════════════════════════════════════════════════
+async function runAll(){
+  clearAll();
+  startTimer();
+  setProgress(2,'STARTING');
+  await runRecon();
+  setProgress(35,'RECON DONE');
+  await Promise.all([runVuln(), runXSS()]);
+  setProgress(80,'VULN DONE');
+  await runSQLi();
+  setProgress(100,'COMPLETE');
+  document.getElementById('phase').textContent='SCAN COMPLETE';
+  clearInterval(timerInt);
+}
+
+// ═══════════════════════════════════════════════════
+//  REPORT
+// ═══════════════════════════════════════════════════
+function genReport(){
+  const title=document.getElementById('rb-title').value||'[Title]';
+  const sev=document.getElementById('rb-sev').value;
+  const type=document.getElementById('rb-type').value;
+  const url=document.getElementById('rb-url').value||'[URL]';
+  const steps=document.getElementById('rb-steps').value||'[steps]';
+  const poc=document.getElementById('rb-poc').value||'[PoC]';
+  const impact=document.getElementById('rb-impact').value||'[impact]';
+  const fix=document.getElementById('rb-fix').value||'[fix]';
+  const out=`## ${title}\n\n**Severity:** ${sev}\n**Type:** ${type}\n**Endpoint:** ${url}\n\n---\n\n### Steps to Reproduce\n${steps}\n\n---\n\n### Proof of Concept\n${poc}\n\n---\n\n### Impact\n${impact}\n\n---\n\n### Remediation\n${fix}\n\n---\n*Submitted in good faith as part of the authorized bug bounty program. No user data was accessed or modified.*`;
+  const el=document.getElementById('rb-preview');
+  el.textContent=out; el.style.display='block';
+  return out;
+}
+function copyReport(){
+  const txt=genReport();
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b=event.target; b.textContent='✓ COPIED'; setTimeout(()=>b.textContent='⎘ COPY',1500);
+  });
+}
+function dlReport(){
+  const txt=genReport();
+  const t=S.target||'target';
+  const blob=new Blob([txt],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`hackerman-report-${t}.txt`; a.click();
+}
+</script>
+</body>
+</html>

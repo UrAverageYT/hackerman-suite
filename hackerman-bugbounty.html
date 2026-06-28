@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HACKER-MAN // BUG BOUNTY FIELD GUIDE</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+
+:root {
+  --green: #00ff41; --green-dim: #00aa2b; --green-ghost: rgba(0,255,65,0.07);
+  --amber: #ffaa00; --red: #ff2244; --cyan: #00e5ff; --purple: #b060ff;
+  --bg: #020d04; --panel: #040f06; --border: rgba(0,255,65,0.22);
+  --glow: 0 0 8px rgba(0,255,65,0.6),0 0 20px rgba(0,255,65,0.2);
+  --glow-amber: 0 0 8px rgba(255,170,0,0.7);
+  --glow-red: 0 0 8px rgba(255,34,68,0.6);
+  --glow-cyan: 0 0 8px rgba(0,229,255,0.5);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:13px;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,0.1) 2px,rgba(0,0,0,0.1) 4px);pointer-events:none;z-index:9999;}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.7) 100%);pointer-events:none;z-index:9998;}
+
+/* HEADER */
+header{display:flex;justify-content:space-between;align-items:center;padding:11px 22px;border-bottom:1px solid var(--border);background:linear-gradient(to right,rgba(0,255,65,0.06),transparent);flex-shrink:0;}
+.logo{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;letter-spacing:3px;text-shadow:var(--glow);}
+.logo em{color:var(--amber);font-style:normal;}
+.logo small{font-size:10px;color:var(--green-dim);font-weight:400;letter-spacing:2px;}
+.money{font-family:'Orbitron',monospace;font-size:11px;color:var(--amber);text-shadow:var(--glow-amber);letter-spacing:2px;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;}
+.tab{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;padding:9px 18px;cursor:pointer;border:none;background:transparent;color:var(--green-dim);border-right:1px solid var(--border);transition:all 0.2s;}
+.tab:hover{color:var(--green);background:var(--green-ghost);}
+.tab.active{color:var(--green);background:rgba(0,255,65,0.08);box-shadow:inset 0 -2px 0 var(--green);}
+
+/* WORKSPACE */
+.workspace{flex:1;overflow:hidden;position:relative;}
+.page{display:none;height:100%;overflow-y:auto;padding:20px 24px;}
+.page.active{display:block;}
+.page::-webkit-scrollbar{width:4px;}
+.page::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* TYPOGRAPHY */
+h2{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;color:var(--green-dim);margin:24px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+h2:first-child{margin-top:0;}
+h2 em{color:var(--amber);font-style:normal;}
+p{color:var(--green-dim);line-height:1.7;margin-bottom:10px;font-size:12px;}
+a{color:var(--cyan);text-decoration:none;}
+a:hover{text-shadow:var(--glow-cyan);}
+code{background:rgba(0,255,65,0.08);border:1px solid var(--border);padding:1px 5px;color:var(--green);font-size:11px;}
+pre{background:rgba(0,0,0,0.5);border:1px solid var(--border);padding:12px 14px;overflow-x:auto;margin:10px 0;line-height:1.6;font-size:11px;}
+pre .cmd{color:var(--green);}
+pre .comment{color:var(--green-dim);}
+pre .hit{color:var(--red);}
+pre .flag{color:var(--amber);}
+pre .url{color:var(--cyan);}
+
+/* CARDS */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:16px;}
+.card{border:1px solid var(--border);padding:14px;background:var(--green-ghost);transition:border-color 0.2s;}
+.card:hover{border-color:rgba(0,255,65,0.5);}
+.card-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;color:var(--green);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.card-body{font-size:11px;color:var(--green-dim);line-height:1.7;}
+.card-body li{margin-left:12px;list-style:none;padding:2px 0;border-bottom:1px solid rgba(0,255,65,0.05);}
+.card-body li:last-child{border:none;}
+.card-body li::before{content:'▸ ';color:var(--green-dim);}
+
+/* TAGS */
+.tag{display:inline-block;font-size:9px;padding:2px 7px;border:1px solid;letter-spacing:1px;margin:2px;}
+.tag.free{color:var(--green);border-color:rgba(0,255,65,0.4);}
+.tag.paid{color:var(--amber);border-color:rgba(255,170,0,0.4);}
+.tag.crit{color:var(--red);border-color:rgba(255,34,68,0.4);}
+.tag.high{color:#ff6677;border-color:rgba(255,102,119,0.4);}
+.tag.med{color:var(--amber);border-color:rgba(255,170,0,0.4);}
+.tag.low{color:var(--green-dim);border-color:var(--border);}
+.tag.info{color:var(--cyan);border-color:rgba(0,229,255,0.35);}
+
+/* WORKFLOW STEPS */
+.steps{display:flex;flex-direction:column;gap:0;}
+.step{display:flex;gap:0;position:relative;}
+.step-num{flex-shrink:0;width:32px;display:flex;flex-direction:column;align-items:center;}
+.step-circle{width:28px;height:28px;border:2px solid var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:10px;background:var(--bg);z-index:1;flex-shrink:0;color:var(--green);text-shadow:var(--glow);}
+.step-line{width:2px;flex:1;background:var(--border);margin:0 auto;min-height:16px;}
+.step:last-child .step-line{display:none;}
+.step-body{padding:0 0 20px 14px;flex:1;}
+.step-title{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;color:var(--green);margin-bottom:6px;}
+.step-body p{margin-bottom:6px;}
+
+/* PAYOUT TABLE */
+.payout-table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;}
+.payout-table th{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--green-dim);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.payout-table td{padding:7px 12px;border-bottom:1px solid rgba(0,255,65,0.06);color:var(--green-dim);}
+.payout-table tr:hover td{background:var(--green-ghost);}
+.payout-table .amt{color:var(--amber);font-family:'Orbitron',monospace;}
+.payout-table .vuln-name{color:var(--cyan);}
+
+/* REPORT BUILDER */
+.report-form{display:flex;flex-direction:column;gap:12px;}
+.field-group{display:flex;flex-direction:column;gap:5px;}
+.field-label{font-size:10px;color:var(--green-dim);letter-spacing:2px;}
+input[type=text],select,textarea{width:100%;background:rgba(0,255,65,0.04);border:1px solid var(--border);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:12px;padding:8px 10px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;resize:vertical;}
+input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:var(--glow);background:rgba(0,255,65,0.07);}
+select option{background:#030b04;}
+textarea{min-height:80px;}
+.btn{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;padding:10px 18px;border:none;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.btn-green{background:var(--green);color:#000;box-shadow:var(--glow);}
+.btn-green:hover{background:#00ff80;}
+.btn-amber{background:transparent;color:var(--amber);border:1px solid rgba(255,170,0,0.45);}
+.btn-amber:hover{background:rgba(255,170,0,0.08);box-shadow:var(--glow-amber);}
+.btn:active{transform:scale(0.98);}
+
+.report-output{background:rgba(0,0,0,0.5);border:1px solid var(--border);padding:16px;font-size:11px;line-height:1.8;white-space:pre-wrap;color:var(--green-dim);margin-top:12px;display:none;max-height:400px;overflow-y:auto;}
+.report-output::-webkit-scrollbar{width:3px;}
+.report-output::-webkit-scrollbar-thumb{background:var(--border);}
+.report-output .r-head{color:var(--green);}
+.report-output .r-label{color:var(--amber);}
+.report-output .r-val{color:var(--green-dim);}
+
+/* CHEATSHEET */
+.cheat-section{margin-bottom:20px;}
+.cheat-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:var(--amber);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,170,0,0.25);}
+.cmd-list{display:flex;flex-direction:column;gap:4px;}
+.cmd-item{background:rgba(0,0,0,0.4);border:1px solid var(--border);padding:8px 12px;font-size:11px;line-height:1.5;cursor:pointer;transition:border-color 0.2s;}
+.cmd-item:hover{border-color:rgba(0,255,65,0.5);background:rgba(0,255,65,0.04);}
+.cmd-item .cmd-line{color:var(--green);}
+.cmd-item .cmd-desc{color:var(--green-dim);font-size:10px;margin-top:2px;}
+.cmd-item .copy-hint{color:var(--green-dim);font-size:9px;float:right;opacity:0;transition:opacity 0.2s;}
+.cmd-item:hover .copy-hint{opacity:1;}
+.copied{color:var(--amber) !important;}
+
+/* BOTTOM */
+.bottom-bar{height:30px;background:var(--panel);border-top:1px solid var(--border);padding:0 22px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--green-dim);letter-spacing:1px;flex-shrink:0;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page.active > *{animation:fadeIn 0.25s ease;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">HACKER<em>-MAN</em> <small>// BUG BOUNTY FIELD GUIDE</small></div>
+  <div class="money">💰 GET PAID. STAY LEGAL.</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('workflow',this)">01 // WORKFLOW</button>
+  <button class="tab" onclick="switchTab('tools',this)">02 // TOOLS</button>
+  <button class="tab" onclick="switchTab('vulns',this)">03 // VULN CLASSES</button>
+  <button class="tab" onclick="switchTab('cheatsheet',this)">04 // CHEATSHEET</button>
+  <button class="tab" onclick="switchTab('report',this)">05 // REPORT BUILDER</button>
+  <button class="tab" onclick="switchTab('money',this)">06 // 💰 PAYOUTS</button>
+</div>
+
+<div class="workspace">
+
+<!-- ══ PAGE 1: WORKFLOW ══ -->
+<div class="page active" id="page-workflow">
+  <h2>// THE REAL BUG BOUNTY WORKFLOW</h2>
+  <p>This is how actual hunters operate. Follow this order every time — skip steps and you'll miss bugs or get out-of-scope.</p>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num"><div class="step-circle">1</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">READ THE SCOPE. SERIOUSLY.</div>
+        <p>Before touching anything — read the entire program brief on HackerOne / Bugcrowd. Know exactly what's in scope (domains, endpoints, apps) and what's out (admin panels, third-party services, rate limiting).</p>
+        <p>Out-of-scope reports = instant reject + possible ban. Programs list their scope at <code>hackerone.com/[company]</code></p>
+        <span class="tag crit">RULE #1</span><span class="tag info">Get written/implied auth via program</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><div class="step-circle">2</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">PASSIVE RECON — DON'T TOUCH YET</div>
+        <p>Gather intel without hitting their servers. Use OSINT tools to map the attack surface.</p>
+        <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--green-dim)">
+          <li>▸ <code>whois domain.com</code> — registrar, nameservers</li>
+          <li>▸ <code>shodan.io</code> — find exposed services, ports, certs</li>
+          <li>▸ <code>crt.sh/?q=%.domain.com</code> — SSL cert subdomain leak</li>
+          <li>▸ <code>web.archive.org</code> — old endpoints, JS files, secrets</li>
+          <li>▸ <code>github.com/search?q=domain.com</code> — leaked keys, tokens</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><div class="step-circle">3</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">ACTIVE RECON — ENUMERATE</div>
+        <p>Now you start touching servers. Enumerate subdomains, ports, directories. Be stealthy — don't hammer with huge wordlists unless the program allows aggressive testing.</p>
+        <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--green-dim)">
+          <li>▸ Subdomain enum: <code>subfinder</code>, <code>amass</code>, <code>assetfinder</code></li>
+          <li>▸ Alive check: <code>httpx</code> — filter live hosts</li>
+          <li>▸ Port scan: <code>nmap -sV -T3 -p- target.com</code></li>
+          <li>▸ Dir fuzz: <code>ffuf -u https://target.com/FUZZ -w wordlist.txt</code></li>
+          <li>▸ JS recon: <code>gau</code>, <code>waybackurls</code> for old endpoints</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><div class="step-circle">4</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">FINGERPRINT &amp; MAP</div>
+        <p>Figure out what's running. Tech stack, frameworks, API structure, auth mechanisms. This tells you WHERE to look for bugs.</p>
+        <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--green-dim)">
+          <li>▸ <code>whatweb</code> / Wappalyzer browser extension</li>
+          <li>▸ Check response headers for <code>X-Powered-By</code>, <code>Server</code></li>
+          <li>▸ Find API docs: <code>/api/docs</code>, <code>/swagger</code>, <code>/graphql</code></li>
+          <li>▸ Check JS files for API endpoints, tokens, secrets</li>
+          <li>▸ <code>nuclei -u target.com -t exposures/</code> for quick wins</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><div class="step-circle">5</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">MANUAL TESTING IN BURP SUITE</div>
+        <p>This is where the real money is. Automated scanners miss the majority of bugs. Set up Burp as your proxy and manually walk through every feature as a real user would.</p>
+        <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--green-dim)">
+          <li>▸ Intercept every request — look at params, headers, cookies</li>
+          <li>▸ Create 2 accounts — test IDOR by swapping IDs between them</li>
+          <li>▸ Test every input field for XSS, SQLi, SSTI</li>
+          <li>▸ Check every state-changing request for CSRF token</li>
+          <li>▸ Try privilege escalation: user → admin endpoints</li>
+          <li>▸ Burp Repeater + Intruder are your best friends</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><div class="step-circle">6</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">CONFIRM &amp; DOCUMENT THE BUG</div>
+        <p>Before reporting — confirm it's real, reproducible, and actually impactful. Duplicate reports = $0. Document everything: steps, request/response, screenshots, impact.</p>
+        <span class="tag med">Screenshot everything</span>
+        <span class="tag med">Save raw HTTP request/response</span>
+        <span class="tag info">Note the exact vulnerable parameter</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><div class="step-circle">7</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">WRITE A KILLER REPORT</div>
+        <p>Report quality directly affects payout. Clear, detailed reports with PoC get higher severity ratings and faster payment. Use the Report Builder tab → copy the template exactly.</p>
+        <span class="tag free">Use Report Builder tab →</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ PAGE 2: TOOLS ══ -->
+<div class="page" id="page-tools">
+  <h2>// THE REAL TOOL STACK</h2>
+  <p>These are the actual tools hunters use. Install them on Kali Linux, Parrot OS, or your own machine. Most are free.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">RECON <span class="tag free">FREE</span></div>
+      <div class="card-body">
+        <ul>
+          <li><a href="https://github.com/projectdiscovery/subfinder" target="_blank">subfinder</a> — fast subdomain enum</li>
+          <li><a href="https://github.com/OWASP/Amass" target="_blank">amass</a> — deep subdomain + ASN mapping</li>
+          <li><a href="https://github.com/tomnomnom/assetfinder" target="_blank">assetfinder</a> — quick asset discovery</li>
+          <li><a href="https://github.com/projectdiscovery/httpx" target="_blank">httpx</a> — probe live hosts at scale</li>
+          <li><a href="https://crt.sh" target="_blank">crt.sh</a> — SSL cert subdomain leak</li>
+          <li><a href="https://www.shodan.io" target="_blank">shodan.io</a> — exposed services search</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">SCANNING <span class="tag free">FREE</span></div>
+      <div class="card-body">
+        <ul>
+          <li><a href="https://nmap.org" target="_blank">nmap</a> — port scan, service detect</li>
+          <li><a href="https://github.com/projectdiscovery/nuclei" target="_blank">nuclei</a> — template-based vuln scan</li>
+          <li><a href="https://github.com/ffuf/ffuf" target="_blank">ffuf</a> — fast dir/param fuzzing</li>
+          <li><a href="https://github.com/maurosoria/dirsearch" target="_blank">dirsearch</a> — directory brute force</li>
+          <li><a href="https://github.com/urbanadventurer/WhatWeb" target="_blank">whatweb</a> — tech fingerprinting</li>
+          <li><a href="https://github.com/lc/gau" target="_blank">gau</a> — fetch known URLs</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">EXPLOITATION <span class="tag free">FREE</span></div>
+      <div class="card-body">
+        <ul>
+          <li><a href="https://sqlmap.org" target="_blank">sqlmap</a> — automated SQLi</li>
+          <li><a href="https://github.com/s0md3v/XSStrike" target="_blank">XSStrike</a> — advanced XSS scanner</li>
+          <li><a href="https://github.com/hahwul/dalfox" target="_blank">dalfox</a> — fast XSS fuzzer</li>
+          <li><a href="https://github.com/swisskyrepo/PayloadsAllTheThings" target="_blank">PayloadsAllTheThings</a> — payload bible</li>
+          <li><a href="https://github.com/danielmiessler/SecLists" target="_blank">SecLists</a> — wordlist collection</li>
+          <li><a href="https://github.com/tomnomnom/waybackurls" target="_blank">waybackurls</a> — historical endpoints</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">BURP SUITE <span class="tag free">FREE COMMUNITY</span><span class="tag paid">$449/yr PRO</span></div>
+      <div class="card-body">
+        <p style="margin-bottom:6px">The #1 tool. No serious hunter works without it.</p>
+        <ul>
+          <li>Proxy — intercept every request</li>
+          <li>Repeater — manually replay/modify requests</li>
+          <li>Intruder — fuzz parameters at scale</li>
+          <li>Scanner (Pro) — automated vuln detection</li>
+          <li>Extensions — add SQLi, JWT, Auth plugins</li>
+        </ul>
+        <p style="margin-top:6px"><a href="https://portswigger.net/burp" target="_blank">portswigger.net/burp</a></p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">LEARNING <span class="tag free">FREE</span></div>
+      <div class="card-body">
+        <ul>
+          <li><a href="https://portswigger.net/web-security" target="_blank">PortSwigger Web Academy</a> — BEST free course</li>
+          <li><a href="https://tryhackme.com" target="_blank">TryHackMe</a> — guided labs</li>
+          <li><a href="https://hackthebox.com" target="_blank">HackTheBox</a> — real challenges</li>
+          <li><a href="https://owasp.org/www-project-top-ten/" target="_blank">OWASP Top 10</a> — know this cold</li>
+          <li><a href="https://github.com/nahamsec/Resources-for-Beginner-Bug-Bounty-Hunters" target="_blank">nahamsec's BB resources</a></li>
+          <li><a href="https://pentesterlab.com" target="_blank">PentesterLab</a> — vuln labs</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">PLATFORMS <span class="tag free">FREE TO JOIN</span></div>
+      <div class="card-body">
+        <ul>
+          <li><a href="https://hackerone.com" target="_blank">HackerOne</a> — biggest platform, most programs</li>
+          <li><a href="https://bugcrowd.com" target="_blank">Bugcrowd</a> — wide range of programs</li>
+          <li><a href="https://intigriti.com" target="_blank">Intigriti</a> — strong EU programs</li>
+          <li><a href="https://yeswehack.com" target="_blank">YesWeHack</a> — growing platform</li>
+          <li><a href="https://www.google.com/about/appsecurity/reward-program/" target="_blank">Google VRP</a> — big Google payouts</li>
+          <li><a href="https://www.microsoft.com/en-us/msrc/bounty" target="_blank">Microsoft MSRC</a> — up to $250k</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE 3: VULN CLASSES ══ -->
+<div class="page" id="page-vulns">
+  <h2>// VULNERABILITY CLASSES — WHAT PAYS</h2>
+  <p>These are the bugs that actually get paid. Learn each one deeply. PortSwigger Web Academy has free labs for all of these.</p>
+
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-title">SQL INJECTION <span class="tag crit">CRITICAL</span></div>
+      <div class="card-body">
+        <p>Attacker injects SQL into input fields to dump databases, bypass auth, or RCE.</p>
+        <p><strong style="color:var(--green)">Where to look:</strong> login forms, search boxes, URL params, API endpoints with numeric IDs.</p>
+        <p><strong style="color:var(--green)">Quick test:</strong> Add <code>'</code> to any input — SQL error = potential vuln.</p>
+        <p><strong style="color:var(--amber)">Tool:</strong> <code>sqlmap -u "URL?id=1" --dbs</code></p>
+        <p><a href="https://portswigger.net/web-security/sql-injection" target="_blank">→ Learn on PortSwigger</a></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">XSS <span class="tag high">HIGH</span></div>
+      <div class="card-body">
+        <p>Inject JavaScript into pages viewed by other users. Steal cookies, sessions, deface pages.</p>
+        <p><strong style="color:var(--green)">Where to look:</strong> Any input that reflects back in the page — search, comments, profile fields, error messages.</p>
+        <p><strong style="color:var(--green)">Quick test:</strong> <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> in every field.</p>
+        <p><strong style="color:var(--amber)">Stored XSS</strong> (persists for other users) pays more than Reflected.</p>
+        <p><a href="https://portswigger.net/web-security/cross-site-scripting" target="_blank">→ Learn on PortSwigger</a></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">IDOR <span class="tag high">HIGH — MOST COMMON</span></div>
+      <div class="card-body">
+        <p>Insecure Direct Object Reference — accessing other users' data by changing an ID.</p>
+        <p><strong style="color:var(--green)">Where to look:</strong> <code>/api/users/1337</code> → try <code>/api/users/1338</code>. Order IDs, invoice IDs, file IDs.</p>
+        <p><strong style="color:var(--green)">How to test:</strong> Make 2 accounts. Access Account B's resources using Account A's session.</p>
+        <p>One of the most common paid bugs. Easy to find, easy to report.</p>
+        <p><a href="https://portswigger.net/web-security/access-control/idor" target="_blank">→ Learn on PortSwigger</a></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CSRF <span class="tag med">MEDIUM</span></div>
+      <div class="card-body">
+        <p>Trick a logged-in user's browser into making unauthorized requests on their behalf.</p>
+        <p><strong style="color:var(--green)">Where to look:</strong> State-changing POST requests (password change, email change, money transfer) without CSRF tokens.</p>
+        <p><strong style="color:var(--green)">Quick test:</strong> In Burp, check if removing CSRF token or using a fake one still works.</p>
+        <p><a href="https://portswigger.net/web-security/csrf" target="_blank">→ Learn on PortSwigger</a></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SSRF <span class="tag crit">CRITICAL</span></div>
+      <div class="card-body">
+        <p>Server-Side Request Forgery — make the server fetch internal URLs. Can expose AWS metadata, internal services, cloud credentials.</p>
+        <p><strong style="color:var(--green)">Where to look:</strong> Any input accepting a URL — webhooks, PDF generators, image importers.</p>
+        <p><strong style="color:var(--green)">Quick test:</strong> Try <code>http://169.254.169.254/</code> (AWS metadata) as URL input.</p>
+        <p><a href="https://portswigger.net/web-security/ssrf" target="_blank">→ Learn on PortSwigger</a></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">OPEN REDIRECT <span class="tag low">LOW–MED</span></div>
+      <div class="card-body">
+        <p>Redirect users from trusted domain to attacker's site. Used for phishing, OAuth token theft.</p>
+        <p><strong style="color:var(--green)">Where to look:</strong> <code>?redirect=</code>, <code>?next=</code>, <code>?url=</code>, <code>?return=</code> params.</p>
+        <p><strong style="color:var(--green)">Quick test:</strong> Set value to <code>https://evil.com</code> — does it redirect?</p>
+        <p>Low payout alone but can chain with OAuth for High.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SUBDOMAIN TAKEOVER <span class="tag high">HIGH</span></div>
+      <div class="card-body">
+        <p>Dangling DNS record pointing to a deprovisioned cloud service you can claim.</p>
+        <p><strong style="color:var(--green)">Where to look:</strong> Subdomains returning NXDOMAIN or "NoSuchBucket" / "There is no app here".</p>
+        <p><strong style="color:var(--green)">Tool:</strong> <code>subjack</code>, <code>nuclei -t takeovers/</code></p>
+        <p>Can serve malicious content on a trusted domain. Easy money.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">AUTH BUGS <span class="tag crit">CRITICAL</span></div>
+      <div class="card-body">
+        <p>Broken auth: weak JWT signing, password reset flaws, 2FA bypasses, session fixation.</p>
+        <p><strong style="color:var(--green)">Where to look:</strong> Password reset flow, JWT tokens (<code>jwt.io</code> to decode), OAuth callbacks.</p>
+        <p><strong style="color:var(--green)">Quick test:</strong> Check if JWT uses <code>alg: none</code>. Try using another user's reset token.</p>
+        <p><a href="https://portswigger.net/web-security/authentication" target="_blank">→ Learn on PortSwigger</a></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ PAGE 4: CHEATSHEET ══ -->
+<div class="page" id="page-cheatsheet">
+  <h2>// COMMAND CHEATSHEET — <em>CLICK TO COPY</em></h2>
+  <p>Real commands. Replace <code>TARGET</code> with your target. Only run against authorized targets.</p>
+
+  <div class="cheat-section">
+    <div class="cheat-title">▸ RECON &amp; ENUMERATION</div>
+    <div class="cmd-list">
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">subfinder -d TARGET -silent | httpx -silent | tee live-hosts.txt</div>
+        <div class="cmd-desc">Find subdomains, filter alive ones, save to file</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">amass enum -passive -d TARGET -o amass-subs.txt</div>
+        <div class="cmd-desc">Passive subdomain enum with amass (no active probing)</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">nmap -sV -T3 --open -p 80,443,8080,8443,3000,3306,5432,6379,9200,27017 TARGET</div>
+        <div class="cmd-desc">Fast scan of common service ports</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">curl -s "https://crt.sh/?q=%.TARGET&output=json" | jq -r '.[].name_value' | sort -u</div>
+        <div class="cmd-desc">Grab subdomains from SSL cert transparency logs</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">gau TARGET | grep -E "\\.js$" | tee js-files.txt</div>
+        <div class="cmd-desc">Find all JS files — look for API keys, endpoints</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">waybackurls TARGET | grep -E "\?|=" | sort -u | tee params.txt</div>
+        <div class="cmd-desc">Historical URLs with parameters — juicy attack surface</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">▸ DIRECTORY &amp; PARAMETER FUZZING</div>
+    <div class="cmd-list">
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">ffuf -u https://TARGET/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -mc 200,301,302,403</div>
+        <div class="cmd-desc">Directory fuzzing with common wordlist</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">ffuf -u "https://TARGET/api/users?FUZZ=test" -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt</div>
+        <div class="cmd-desc">Fuzz for hidden GET parameters</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">ffuf -u https://TARGET/api/users/FUZZ -w /usr/share/seclists/Fuzzing/4-digits-0000-9999.txt -mc 200</div>
+        <div class="cmd-desc">IDOR test — fuzz numeric IDs for 200 responses</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">▸ SQL INJECTION</div>
+    <div class="cmd-list">
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">sqlmap -u "https://TARGET/page?id=1" --dbs --batch --level=3</div>
+        <div class="cmd-desc">Auto-detect SQLi and enumerate databases</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">sqlmap -u "https://TARGET/login" --forms --dump --batch</div>
+        <div class="cmd-desc">Test login form, dump data if vulnerable</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">sqlmap -u "https://TARGET/page?id=1" -p id --technique=T --time-sec=5</div>
+        <div class="cmd-desc">Blind time-based SQLi test on specific param</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">▸ XSS</div>
+    <div class="cmd-list">
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">dalfox url "https://TARGET/search?q=test" --silence</div>
+        <div class="cmd-desc">Fast XSS scan on a URL parameter</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">python3 xsstrike.py -u "https://TARGET/page?q=test" --crawl</div>
+        <div class="cmd-desc">XSStrike with crawling — finds more attack surfaces</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">cat params.txt | dalfox pipe --silence -o xss-results.txt</div>
+        <div class="cmd-desc">Pipe waybackurls params through dalfox for mass XSS test</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">▸ NUCLEI — QUICK WINS</div>
+    <div class="cmd-list">
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">nuclei -u https://TARGET -t exposures/ -t misconfiguration/ -t takeovers/ -severity critical,high</div>
+        <div class="cmd-desc">Scan for exposed secrets, misconfigs, takeovers</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">nuclei -u https://TARGET -t cves/ -severity critical,high -o nuclei-cves.txt</div>
+        <div class="cmd-desc">Check for known CVEs — easy bounties on unpatched systems</div>
+      </div>
+      <div class="cmd-item" onclick="copyCmd(this)">
+        <span class="copy-hint">click to copy</span>
+        <div class="cmd-line">cat live-hosts.txt | nuclei -t exposures/tokens/ -o tokens.txt</div>
+        <div class="cmd-desc">Mass scan for exposed API keys and tokens across all live hosts</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ PAGE 5: REPORT BUILDER ══ -->
+<div class="page" id="page-report">
+  <h2>// REAL BUG BOUNTY REPORT BUILDER</h2>
+  <p>A good report is the difference between $0 and $2,000. Programs want: clear title, severity, steps to reproduce, impact, fix suggestion. Fill this out and copy to HackerOne/Bugcrowd.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="report-form">
+
+      <div class="field-group">
+        <div class="field-label">VULNERABILITY TITLE</div>
+        <input type="text" id="r-title" placeholder="e.g. Stored XSS in /profile bio field via unescaped input"/>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="field-group">
+          <div class="field-label">SEVERITY</div>
+          <select id="r-sev">
+            <option>Critical</option>
+            <option>High</option>
+            <option selected>Medium</option>
+            <option>Low</option>
+            <option>Informational</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">VULN TYPE</div>
+          <select id="r-type">
+            <option>SQL Injection</option>
+            <option>XSS (Reflected)</option>
+            <option>XSS (Stored)</option>
+            <option>IDOR</option>
+            <option>CSRF</option>
+            <option>SSRF</option>
+            <option>Open Redirect</option>
+            <option>Subdomain Takeover</option>
+            <option>Auth Bypass</option>
+            <option>Broken Access Control</option>
+            <option>Information Disclosure</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">VULNERABLE ENDPOINT / URL</div>
+        <input type="text" id="r-url" placeholder="https://target.com/api/users?id=1337"/>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">STEPS TO REPRODUCE</div>
+        <textarea id="r-steps" placeholder="1. Log in as a normal user&#10;2. Navigate to /profile&#10;3. Enter payload in the 'bio' field: &lt;script&gt;alert(document.cookie)&lt;/script&gt;&#10;4. Save profile&#10;5. Any user who visits the profile will execute the script" style="min-height:110px"></textarea>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">PROOF OF CONCEPT (what happened)</div>
+        <textarea id="r-poc" placeholder="The bio field does not sanitize HTML. The payload &lt;svg onload=alert(document.cookie)&gt; executes on page load for any visitor. Attached screenshot shows cookie data exfiltrated."></textarea>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">IMPACT (why it matters to the business)</div>
+        <textarea id="r-impact" placeholder="An attacker can steal session cookies of any user who visits the affected profile, leading to full account takeover. If the victim is an admin, this results in complete compromise of the application."></textarea>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">REMEDIATION SUGGESTION</div>
+        <textarea id="r-fix" placeholder="Sanitize all user input using a library like DOMPurify before rendering in HTML. Implement a Content-Security-Policy header to prevent script execution from untrusted sources."></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-green" style="flex:1" onclick="buildBBReport()">⟳ GENERATE REPORT</button>
+        <button class="btn btn-amber" style="flex:1" onclick="copyReport()">⎘ COPY TO CLIPBOARD</button>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;color:var(--green-dim);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">PREVIEW — COPY THIS INTO HACKERONE / BUGCROWD</div>
+      <div class="report-output" id="report-out" style="display:block;height:calc(100% - 40px)">Fill in the form and click Generate Report.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE 6: PAYOUTS ══ -->
+<div class="page" id="page-money">
+  <h2>// AVERAGE PAYOUT RANGES — <em>WHAT YOU CAN EARN</em></h2>
+  <p>These are real average ranges from HackerOne's public data. Actual payouts vary by company and impact. Bug chains (combining multiple bugs) multiply the payout.</p>
+
+  <table class="payout-table">
+    <thead>
+      <tr>
+        <th>VULN TYPE</th>
+        <th>SEVERITY</th>
+        <th>AVG PAYOUT</th>
+        <th>TOP PAYOUT</th>
+        <th>DIFFICULTY</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="vuln-name">Remote Code Execution (RCE)</td><td><span class="tag crit">CRITICAL</span></td><td class="amt">$5,000–$50,000</td><td class="amt">$250,000+</td><td><span class="tag high">HARD</span></td></tr>
+      <tr><td class="vuln-name">SQL Injection (data exfil)</td><td><span class="tag crit">CRITICAL</span></td><td class="amt">$2,000–$15,000</td><td class="amt">$50,000</td><td><span class="tag med">MEDIUM</span></td></tr>
+      <tr><td class="vuln-name">SSRF (internal access)</td><td><span class="tag crit">CRITICAL</span></td><td class="amt">$3,000–$20,000</td><td class="amt">$70,000</td><td><span class="tag med">MEDIUM</span></td></tr>
+      <tr><td class="vuln-name">Auth Bypass / Account Takeover</td><td><span class="tag crit">CRITICAL</span></td><td class="amt">$3,000–$25,000</td><td class="amt">$100,000</td><td><span class="tag med">MEDIUM</span></td></tr>
+      <tr><td class="vuln-name">IDOR (sensitive data)</td><td><span class="tag high">HIGH</span></td><td class="amt">$500–$5,000</td><td class="amt">$20,000</td><td><span class="tag free">EASY</span></td></tr>
+      <tr><td class="vuln-name">Stored XSS</td><td><span class="tag high">HIGH</span></td><td class="amt">$500–$3,000</td><td class="amt">$15,000</td><td><span class="tag free">EASY</span></td></tr>
+      <tr><td class="vuln-name">Subdomain Takeover</td><td><span class="tag high">HIGH</span></td><td class="amt">$500–$2,500</td><td class="amt">$5,000</td><td><span class="tag free">EASY</span></td></tr>
+      <tr><td class="vuln-name">CSRF (sensitive action)</td><td><span class="tag med">MED</span></td><td class="amt">$200–$1,500</td><td class="amt">$5,000</td><td><span class="tag free">EASY</span></td></tr>
+      <tr><td class="vuln-name">Reflected XSS</td><td><span class="tag med">MED</span></td><td class="amt">$200–$1,000</td><td class="amt">$5,000</td><td><span class="tag free">EASY</span></td></tr>
+      <tr><td class="vuln-name">Open Redirect</td><td><span class="tag low">LOW</span></td><td class="amt">$50–$500</td><td class="amt">$1,500</td><td><span class="tag free">EASY</span></td></tr>
+      <tr><td class="vuln-name">Info Disclosure (sensitive)</td><td><span class="tag low">LOW</span></td><td class="amt">$50–$500</td><td class="amt">$2,000</td><td><span class="tag free">EASY</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>// THE FASTEST PATH TO FIRST PAYOUT</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">BEGINNER TARGETS</div>
+      <div class="card-body">
+        <p>Start with programs that have large attack surfaces, lower competition, and pay for low/medium severity.</p>
+        <ul>
+          <li>HackerOne public programs — sort by "most reports"</li>
+          <li>Programs with wide scope (*.company.com)</li>
+          <li>Bug Bounty programs on Bugcrowd with "VRT" ratings</li>
+          <li>Avoid invite-only private programs until you have reps</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">QUICK WIN STRATEGY</div>
+      <div class="card-body">
+        <p>These bugs are easy to find and still pay. Build your rep with these while learning harder stuff.</p>
+        <ul>
+          <li>Subdomain takeovers — run nuclei takeover templates</li>
+          <li>IDOR on API endpoints — make 2 accounts, swap IDs</li>
+          <li>Exposed admin panels / .git directories</li>
+          <li>Missing security headers on sensitive pages</li>
+          <li>Open redirects — check every <code>?url=</code> param</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">GRIND PLAN</div>
+      <div class="card-body">
+        <p>Realistic path to consistent earnings:</p>
+        <ul>
+          <li><strong style="color:var(--green)">Month 1–2:</strong> PortSwigger Web Academy — all SQLi, XSS, IDOR, CSRF labs</li>
+          <li><strong style="color:var(--green)">Month 3:</strong> First real target, focus on recon only</li>
+          <li><strong style="color:var(--green)">Month 4:</strong> Submit first report (even low severity)</li>
+          <li><strong style="color:var(--green)">Month 6+:</strong> First payout, build reputation</li>
+          <li><strong style="color:var(--amber)">Year 1+:</strong> Private invites, consistent income</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /workspace -->
+
+<div class="bottom-bar">
+  <span>HACKER-MAN // FIELD GUIDE v3.0</span>
+  <span>FOR AUTHORIZED BUG BOUNTY USE ONLY — GET WRITTEN PERMISSION — STAY LEGAL</span>
+  <span style="color:var(--amber)">💰 GO GET THAT BREAD</span>
+</div>
+
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('page-'+name).classList.add('active');
+}
+
+function copyCmd(el) {
+  const cmdLine = el.querySelector('.cmd-line');
+  const text = cmdLine.textContent.trim();
+  navigator.clipboard.writeText(text).then(()=>{
+    const hint = el.querySelector('.copy-hint');
+    hint.textContent = '✓ copied!';
+    hint.classList.add('copied');
+    setTimeout(()=>{ hint.textContent='click to copy'; hint.classList.remove('copied'); }, 1500);
+  });
+}
+
+function buildBBReport() {
+  const title  = document.getElementById('r-title').value  || '[Vulnerability Title]';
+  const sev    = document.getElementById('r-sev').value;
+  const type   = document.getElementById('r-type').value;
+  const url    = document.getElementById('r-url').value    || '[vulnerable URL]';
+  const steps  = document.getElementById('r-steps').value  || '[steps not filled]';
+  const poc    = document.getElementById('r-poc').value    || '[PoC not filled]';
+  const impact = document.getElementById('r-impact').value || '[impact not filled]';
+  const fix    = document.getElementById('r-fix').value    || '[fix not filled]';
+
+  const report =
+`## ${title}
+
+**Severity:** ${sev}
+**Vulnerability Type:** ${type}
+**Affected Endpoint:** ${url}
+
+---
+
+### Summary
+
+${type} vulnerability discovered on ${url} that allows an attacker to [describe attack]. This issue was identified during authorized testing of the in-scope target.
+
+---
+
+### Steps to Reproduce
+
+${steps}
+
+---
+
+### Proof of Concept
+
+${poc}
+
+---
+
+### Impact
+
+${impact}
+
+---
+
+### Remediation
+
+${fix}
+
+---
+
+### References
+- OWASP: https://owasp.org/www-community/attacks/${type.replace(/\s/g,'-')}
+- CWE: https://cwe.mitre.org/
+
+---
+*Reported via HackerOne / Bugcrowd. This report is submitted in good faith as part of the bug bounty program. I have not accessed, modified, or stored any user data.*`;
+
+  document.getElementById('report-out').textContent = report;
+  document.getElementById('report-out').style.color = 'var(--green-dim)';
+}
+
+function copyReport() {
+  const text = document.getElementById('report-out').textContent;
+  if (!text || text === 'Fill in the form and click Generate Report.') {
+    buildBBReport();
+  }
+  navigator.clipboard.writeText(document.getElementById('report-out').textContent).then(()=>{
+    const btn = event.target;
+    btn.textContent = '✓ COPIED!';
+    setTimeout(()=>{ btn.textContent='⎘ COPY TO CLIPBOARD'; }, 1500);
+  });
+}
+</script>
+</body>
+</html>
