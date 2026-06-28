@@ -59,4 +59,4 @@ http://localhost:8080/hackerman-combined.html
 
 ## Credits
 
-Built with [Claude](https://claude.ai) using free public APIs: [dns.google](https://dns.google), [ip-api.com](https://ip-api.com), [hackertarget.com](https://hackertarget.com), and [Shodan](https://shodan.io).
+Built using free public APIs: [dns.google](https://dns.google), [ip-api.com](https://ip-api.com), [hackertarget.com](https://hackertarget.com), and [Shodan](https://shodan.io).
