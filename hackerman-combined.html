@@ -841,6 +841,45 @@ setInterval(()=>{
   document.getElementById('clock').textContent=n.toTimeString().slice(0,8);
 },1000);
 
+// ── STARTUP SELF-CHECK ──
+(async function selfCheck(){
+  const statusEl = document.querySelector('.hdr-r');
+  try {
+    if (location.protocol === 'file:') {
+      console.warn(errMsg ? errMsg('E901','running via file:// — API calls will fail with CORS errors. Serve via python3 -m http.server instead.') : '[E000] file:// protocol detected — serve locally instead');
+      return;
+    }
+    const r = await fetch('https://dns.google/resolve?name=google.com&type=A', {method:'GET'});
+    if (!r.ok) console.warn('[E000] dns.google reachable but returned non-200 — public API may be degraded');
+  } catch(e) {
+    console.warn('[E000] Startup connectivity check failed — public APIs may be unreachable:', e.message);
+  }
+})();
+
+
+// ═══════════════════════════════════════════════════
+//  ERROR CODES — see README.md Troubleshooting section
+// ═══════════════════════════════════════════════════
+const ERR = {
+  E101: 'DNS lookup failed (dns.google unreachable)',
+  E102: 'IP geolocation lookup failed (ip-api.com unreachable or rate-limited)',
+  E103: 'Subdomain enumeration failed (hackertarget.com unreachable or rate-limited)',
+  E201: 'Shodan API request failed (bad key, no credits, or rate-limited)',
+  E301: 'HTTP header fetch failed (hackertarget.com unreachable or target blocking proxy)',
+  E303: 'Subdomain takeover check failed',
+  E401: 'URL crawl failed (hackertarget.com pagelinks unreachable)',
+  E501: 'SQLi probe request failed (target or proxy unreachable)',
+  E601: 'Host header / cache signal check failed',
+  E602: 'SSRF candidate scan failed',
+  E603: 'XXE candidate scan failed',
+  E604: 'Prototype pollution scan failed',
+  E605: 'Session/OAuth analysis failed',
+  E901: 'Target field is empty or invalid',
+};
+function errMsg(code, extra){
+  return `[${code}] ${ERR[code]||'Unknown error'}${extra?' — '+extra:''}`;
+}
+
 // ── NAV ──
 function go(name, btn) {
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -1034,7 +1073,7 @@ async function runVuln(){
       await vl('ti','hdr','X-Frame-Options missing — Google VRP: clickjacking NOT paid alone, skip');
     }
 
-  }catch(e){ await vl('tw','hdr','Header check failed: '+e.message); }
+  }catch(e){ await vl('tw','hdr',errMsg('E301',e.message)); }
 
   // ── 2. ROBOTS.TXT — parse for hidden paths ──
   await vs('ROBOTS.TXT ANALYSIS');
@@ -1170,7 +1209,7 @@ async function runXSS(){
       urls=txt.trim().split('\n').filter(u=>u.startsWith('http')&&u.includes(t));
       await xl('tg','crw',`Crawled ${urls.length} internal URLs`);
     } else { await xl('ti','crw','No crawl data from hackertarget'); }
-  }catch(e){ await xl('tw','crw','Crawl failed: '+e.message); }
+  }catch(e){ await xl('tw','crw',errMsg('E401',e.message)); }
 
   const paramUrls=urls.filter(u=>u.includes('?')&&u.includes('='));
   await xl('ti','crw',`${paramUrls.length} URLs with parameters`);
@@ -1281,7 +1320,7 @@ async function runAdvanced(){
       for(const l of cacheHeaders) await al('tw','hhi','  '+l.trim());
       addFinding('CRIT','Caching layer + host header — test for web cache poisoning. Google VRP T0 C0 ($20k+)','xss');
     }
-  }catch(e){ await al('tw','hhi','Host header check failed: '+e.message); }
+  }catch(e){ await al('tw','hhi',errMsg('E601',e.message)); }
 
   // ── 2. SSRF SIGNAL DETECTION ──
   // Google pays S1-S2 for SSRF ($13k-$75k depending on impact)
@@ -1316,7 +1355,7 @@ async function runAdvanced(){
       }
       await al('ti','ssrf','  Use Burp Collaborator to detect out-of-band SSRF');
     }
-  }catch(e){ await al('tw','ssrf','SSRF check failed: '+e.message); }
+  }catch(e){ await al('tw','ssrf',errMsg('E602',e.message)); }
 
   // ── 3. XXE DETECTION SIGNALS ──
   // XXE = S1 on Google VRP ($50k-$75k if file read achieved)
@@ -1353,7 +1392,7 @@ async function runAdvanced(){
     if(!xmlUrls.length && !uploadUrls.length){
       await al('tg','xxe','No obvious XML/upload endpoints found in crawl');
     }
-  }catch(e){ await al('tw','xxe','XXE check failed: '+e.message); }
+  }catch(e){ await al('tw','xxe',errMsg('E603',e.message)); }
 
   // ── 4. PROTOTYPE POLLUTION SIGNALS ──
   // Relevant for Google's JS-heavy apps — can lead to XSS or RCE
@@ -1385,7 +1424,7 @@ async function runAdvanced(){
     }
 
     if(!jsonParams.length) await al('tg','pp','No obvious prototype pollution params found');
-  }catch(e){ await al('tw','pp','Prototype pollution check failed: '+e.message); }
+  }catch(e){ await al('tw','pp',errMsg('E604',e.message)); }
 
   // ── 5. SESSION FIXATION / WEAK SESSION IDs ──
   // Auth bugs = S2 on Google VRP ($13k-$50k)
@@ -1439,7 +1478,7 @@ async function runAdvanced(){
       await al('ti','sess','  Test: redirect_uri bypass, state param CSRF, token leakage via Referer');
       await al('ti','sess','  Google VRP: OAuth bypass = S2a ($31k-$50k on T2)');
     }
-  }catch(e){ await al('tw','sess','Session check failed: '+e.message); }
+  }catch(e){ await al('tw','sess',errMsg('E605',e.message)); }
 
   // ── SUMMARY ──
   await as('ADVANCED SCAN COMPLETE');
@@ -1579,7 +1618,7 @@ async function runSQLi(){
       const r=await fetch(`https://api.hackertarget.com/pagelinks/?q=${encodeURIComponent(url)}`);
       const body=await r.text();
       return{body:body.toLowerCase(),ms:Date.now()-t0,ok:true};
-    }catch(e){return{body:'',ms:0,ok:false};}
+    }catch(e){ console.warn(errMsg('E501',e.message)); return{body:'',ms:0,ok:false};}
   }
 
   let sqliFinds=[];
@@ -1889,6 +1928,10 @@ function clearAll(){
 async function runRecon(){
   const raw = document.getElementById('r-target').value.trim() || 'example.com';
   const target = raw.replace(/^https?:\/\//,'').replace(/\/.*/,'').trim();
+  if(!target || !target.includes('.')){
+    document.getElementById('rt').innerHTML = '<div class="ts">'+errMsg('E901','enter a valid domain like example.com')+'</div>';
+    return;
+  }
 
   ['i-ip','i-asn','i-org','i-waf'].forEach(id=>document.getElementById(id).textContent='—');
   document.getElementById('i-ports').innerHTML='<span style="font-size:10px;color:var(--gd)">use nmap locally</span>';
@@ -1937,7 +1980,7 @@ async function runRecon(){
     } else {
       await rlog('tw','dns','No A record found');
     }
-  } catch(e){ await rlog('tc','dns','DNS lookup failed: '+e.message); }
+  } catch(e){ await rlog('tc','dns',errMsg('E101',e.message)); }
 
   // ── 1b. SHODAN — ports, services, vulns ──
   const shodanKey = document.getElementById('r-shodan').value.trim();
@@ -1978,9 +2021,9 @@ async function runRecon(){
         if(sd.isp) await rlog('tg','shdn',`ISP: ${sd.isp}`);
       } else {
         const err = await sr.json();
-        await rlog('tw','shdn','Shodan error: '+(err.error||sr.status)+' — check your key');
+        await rlog('tw','shdn',errMsg('E201',(err.error||sr.status)+' — check your key'));
       }
-    } catch(e){ await rlog('tw','shdn','Shodan request failed: '+e.message); }
+    } catch(e){ await rlog('tw','shdn',errMsg('E201',e.message)); }
   } else if(!shodanKey) {
     await rlog('ti','shdn','No Shodan key — skipping port scan (add key above for real data)');
     document.getElementById('i-ports').innerHTML='<span style="font-size:10px;color:var(--gd)">add Shodan key for ports</span>';
@@ -2090,7 +2133,7 @@ async function runRecon(){
       await rlog('tc','sub','[ALERT] Sensitive subdomain detected — admin/staging/dev');
     }
   } catch(e){
-    await rlog('tw','sub','crt.sh lookup failed: '+e.message);
+    await rlog('tw','sub',errMsg('E103','crt.sh — '+e.message));
     document.getElementById('i-subs').textContent='crt.sh unavailable';
   }
 
@@ -2129,7 +2172,7 @@ async function runRecon(){
     const cf = headers.find(h=>h[0].toLowerCase()==='cf-ray'||h[0].toLowerCase()==='cf-cache-status');
     if(cf){ await rlog('tw','http','WAF: Cloudflare confirmed (cf-ray header)'); document.getElementById('i-waf').textContent='Cloudflare'; }
   } catch(e){
-    await rlog('tw','http','Header fetch failed (site may block HEAD): '+e.message);
+    await rlog('tw','http',errMsg('E301','site may block automated requests — '+e.message));
   }
 
   // ── DONE ──
