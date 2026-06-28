@@ -1,2 +1,2 @@
 # hackerman-suite
-Hacker-Man Suite — a browser-based bug bounty toolkit combining real passive recon (DNS, Shodan, subdomain discovery) with vulnerability signal detection (SQLi, XSS, IDOR, SSRF, host header injection, and more)
+Hacker-Man Suite — a browser-based bug bounty toolkit combining real passive recon (DNS, Shodan, subdomain discovery) with vulnerability signal detection (SQLi, XSS, IDOR, SSRF, host header injection, and more), all wrapped in a CRT-terminal hacker aesthetic. It's tailored to flag exactly what programs like Google's VRP actually pay for, and auto-generates a submission-ready report when it finds something.
